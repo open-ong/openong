@@ -5,7 +5,7 @@ import { getSubdomainData } from '@/lib/subdomains';
 import { getCampaigns } from '@/lib/campaigns';
 import { getOrders } from '@/lib/orders';
 import { getTrafficSeries } from '@/lib/traffic';
-import { headers } from 'next/headers';
+import { rootDomain } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreateCampaignDialog } from '../create-campaign-dialog';
@@ -25,7 +25,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { subdomain } = await params;
   const data = await getSubdomainData(subdomain);
-  return { title: data ? `${data.name} · Administración` : subdomain };
+  return { title: data ? `${data.name} · Administración` : rootDomain };
 }
 
 export const dynamic = 'force-dynamic';
@@ -47,8 +47,6 @@ export default async function OngAdminPage({
     notFound();
   }
 
-  const host = (await headers()).get('host') || '';
-
   const [campaigns, orders, traffic] = await Promise.all([
     getCampaigns(subdomain),
     getOrders(subdomain),
@@ -64,7 +62,7 @@ export default async function OngAdminPage({
           <div>
             <h1 className="text-3xl font-bold">{data.name}</h1>
             <p className="mt-1 text-sm text-gray-500">
-              {subdomain}.{host}
+              {subdomain}.{rootDomain}
             </p>
           </div>
           <div className="flex items-center gap-3">

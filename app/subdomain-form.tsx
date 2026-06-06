@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createSubdomainAction } from '@/app/actions';
+import { rootDomain } from '@/lib/utils';
 
 type CreateState = {
   error?: string;
@@ -12,7 +13,7 @@ type CreateState = {
   name?: string;
 };
 
-export function SubdomainForm({ host }: { host: string }) {
+export function SubdomainForm() {
   const [state, action, isPending] = useActionState<CreateState, FormData>(
     createSubdomainAction,
     {}
@@ -31,7 +32,7 @@ export function SubdomainForm({ host }: { host: string }) {
         />
         <p className="text-xs text-gray-500">
           Tu organización va a vivir en{' '}
-          <span className="font-medium">tu-org.{host}</span>
+          <span className="font-medium">tu-org.{rootDomain}</span>
         </p>
       </div>
 

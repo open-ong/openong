@@ -19,8 +19,7 @@ import {
 } from '@/lib/orders';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { protocol } from '@/lib/utils';
+import { rootDomain, protocol } from '@/lib/utils';
 
 export async function createSubdomainAction(
   prevState: any,
@@ -56,8 +55,7 @@ export async function createSubdomainAction(
     createdAt: Date.now()
   });
 
-  const host = (await headers()).get('host') || 'localhost:3000';
-  redirect(`${protocol}://${sanitizedSubdomain}.${host}/admin`);
+  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}/admin`);
 }
 
 export async function deleteSubdomainAction(

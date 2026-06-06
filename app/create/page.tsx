@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { SubdomainForm } from '../subdomain-form';
+import { rootDomain } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Crear tu ONG · OpenONG',
@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     'Crea el sitio de tu organización en OpenONG y empieza a montar tus canales de financiación con IA.'
 };
 
-export default async function CreatePage() {
-  const host = (await headers()).get('host') || '';
+export default function CreatePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4 relative">
       <div className="absolute top-4 left-4">
@@ -37,12 +36,12 @@ export default async function CreatePage() {
           </h1>
           <p className="mt-3 text-lg text-gray-600">
             Elegí el nombre de tu organización. Vas a tener tu propio sitio en{' '}
-            <span className="font-medium">tu-org.{host}</span>
+            <span className="font-medium">tu-org.{rootDomain}</span>
           </p>
         </div>
 
         <div className="mt-8 bg-white shadow-md rounded-lg p-6">
-          <SubdomainForm host={host} />
+          <SubdomainForm />
         </div>
       </div>
     </div>
