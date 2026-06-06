@@ -175,6 +175,11 @@ export const config: Config<Props> = {
         src: {
           type: 'custom',
           label: 'Imagen',
+          // Custom fields need a manual schema for the AI plugin to fill them.
+          ai: {
+            schema: { type: 'string' },
+            instructions: 'URL de una imagen (https://...)'
+          },
           render: ({ value, onChange }) => (
             <CloudinaryImageField value={value} onChange={onChange} />
           )
@@ -200,6 +205,11 @@ export const config: Config<Props> = {
         image: {
           type: 'custom',
           label: 'Imagen',
+          // Custom fields need a manual schema for the AI plugin to fill them.
+          ai: {
+            schema: { type: 'string' },
+            instructions: 'URL de una imagen del producto (https://...)'
+          },
           render: ({ value, onChange }) => (
             <CloudinaryImageField value={value} onChange={onChange} />
           )
