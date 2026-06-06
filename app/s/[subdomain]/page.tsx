@@ -2,7 +2,9 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSubdomainData } from '@/lib/subdomains';
+import { getPageData } from '@/lib/pages';
 import { protocol, rootDomain } from '@/lib/utils';
+import { PageRender } from './render';
 
 export async function generateMetadata({
   params
@@ -34,6 +36,11 @@ export default async function SubdomainPage({
 
   if (!subdomainData) {
     notFound();
+  }
+
+  const pageData = await getPageData(subdomain);
+  if (pageData && pageData.content && pageData.content.length > 0) {
+    return <PageRender data={pageData} />;
   }
 
   return (

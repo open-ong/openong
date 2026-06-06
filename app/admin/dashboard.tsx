@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { deleteSubdomainAction } from '@/app/actions';
 import { rootDomain, protocol } from '@/lib/utils';
@@ -92,7 +92,7 @@ function TenantGrid({
                 Created: {new Date(tenant.createdAt).toLocaleDateString()}
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex items-center justify-between">
               <a
                 href={`${protocol}://${tenant.subdomain}.${rootDomain}`}
                 target="_blank"
@@ -101,6 +101,13 @@ function TenantGrid({
               >
                 Visit subdomain →
               </a>
+              <Link
+                href={`/admin/${tenant.subdomain}/edit`}
+                className="inline-flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit page
+              </Link>
             </div>
           </CardContent>
         </Card>
