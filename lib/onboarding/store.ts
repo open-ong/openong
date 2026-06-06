@@ -51,7 +51,13 @@ export async function getSession(
   sessionId: string
 ): Promise<OnboardingSession | null> {
   if (redis) {
-    return (await redis.get<OnboardingSession>(KEY_PREFIX + sessionId)) ?? null;
+    try {
+      return (
+        (await redis.get<OnboardingSession>(KEY_PREFIX + sessionId)) ?? null
+      );
+    } catch {
+      return memoryStore.get(sessionId) ?? null;
+    }
   }
   return memoryStore.get(sessionId) ?? null;
 }
@@ -59,17 +65,29 @@ export async function getSession(
 export async function saveSession(session: OnboardingSession): Promise<void> {
   session.updatedAt = new Date().toISOString();
   if (redis) {
-    // 30-day TTL so abandoned sessions self-clean.
-    await redis.set(KEY_PREFIX + session.id, session, { ex: 60 * 60 * 24 * 30 });
-    return;
+    try {
+      // 30-day TTL so abandoned sessions self-clean.
+      await redis.set(KEY_PREFIX + session.id, session, {
+        ex: 60 * 60 * 24 * 30
+      });
+      return;
+    } catch {
+      memoryStore.set(session.id, session);
+      return;
+    }
   }
   memoryStore.set(session.id, session);
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
   if (redis) {
-    await redis.del(KEY_PREFIX + sessionId);
-    return;
+    try {
+      await redis.del(KEY_PREFIX + sessionId);
+      return;
+    } catch {
+      memoryStore.delete(sessionId);
+      return;
+    }
   }
   memoryStore.delete(sessionId);
 }

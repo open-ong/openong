@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.6.4",
     "@puckeditor/cloud-client": "^0.7.0",
     "@puckeditor/core": "^0.21.2",
     "@puckeditor/plugin-ai": "^0.7.0",
