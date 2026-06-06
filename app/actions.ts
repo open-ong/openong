@@ -10,6 +10,7 @@ import {
   type CampaignType,
   type CampaignPayment
 } from '@/lib/campaigns';
+import { buildDemoCampaignPrompt } from '@/lib/demo-campaign-prompt';
 import {
   getOrders,
   updateOrderStatus,
@@ -86,7 +87,11 @@ export async function createCampaignAction(
 ): Promise<CreateCampaignState> {
   const sub = sanitizeSubdomain(subdomain);
   const title = data.title?.trim();
-  const prompt = data.prompt?.trim();
+  const prompt = buildDemoCampaignPrompt({
+    type: data.type,
+    title,
+    userPrompt: data.prompt
+  });
 
   if (!title) {
     return { error: 'Title is required' };
