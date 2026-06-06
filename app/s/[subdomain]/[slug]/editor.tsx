@@ -1,13 +1,26 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { Data } from '@puckeditor/core';
 import { Puck } from '@puckeditor/core';
 import { createAiPlugin } from '@puckeditor/plugin-ai';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 import config from '@/puck.config';
 import { markCampaignSentAction } from '@/app/actions';
 
-const aiPlugin = createAiPlugin();
+const AUTOSAVE_DELAY_MS = 1000;
+
+// Chat attachments are disabled: that path uploads to Puck Cloud's CDN
+// (cdn.puck.run) and 500s without a configured Puck Cloud project. Images are
+// uploaded to Cloudinary instead, via the custom field on the Image/Product
+// blocks. Re-enable only if Puck Cloud is set up with an apiKey.
+const aiPlugin = createAiPlugin({
+  chat: {
+    attachments: {
+      enabled: false
+    }
+  }
+});
 
 export function CampaignEditor({
   subdomain,
@@ -23,6 +36,21 @@ export function CampaignEditor({
   autoSend: boolean;
 }) {
   const sentRef = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const savePage = useCallback(
+    (next: Data) => {
+      void fetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subdomain, slug, data: next })
+      });
+    },
+    [subdomain, slug]
+  );
+
+  // Flush any pending autosave when the editor unmounts.
+  useEffect(() => () => clearTimeout(saveTimer.current), []);
 
   useEffect(() => {
     if (!autoSend || !prompt || sentRef.current) return;
@@ -65,12 +93,34 @@ export function CampaignEditor({
       config={config}
       data={data}
       ui={{ plugin: { current: aiPlugin.name }, rightSideBarVisible: true }}
-      onPublish={async (published) => {
-        await fetch('/api/pages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subdomain, slug, data: published })
-        });
+      onChange={(next) => {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => savePage(next), AUTOSAVE_DELAY_MS);
+      }}
+      overrides={{
+        header: ({ children }) => (
+          <div className="flex items-center">
+            <a
+              href="/admin"
+              className="flex items-center gap-1 whitespace-nowrap px-4 text-sm font-medium text-gray-700 transition-colors hover:text-gray-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver
+            </a>
+            <div className="min-w-0 flex-1">{children}</div>
+          </div>
+        ),
+        headerActions: () => (
+          <a
+            href={`/${slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Ver sitio web
+          </a>
+        )
       }}
     />
   );

@@ -1,4 +1,6 @@
 import type { Config } from '@puckeditor/core';
+import { useCart, formatPrice } from '@/lib/cart/cart-context';
+import { CloudinaryImageField } from '@/components/cloudinary-image-field';
 
 type Props = {
   Hero: {
@@ -22,6 +24,13 @@ type Props = {
   Image: {
     src: string;
     alt: string;
+  };
+  Product: {
+    name: string;
+    price: number;
+    image: string;
+    description: string;
+    buttonLabel: string;
   };
   Spacer: {
     size: number;
@@ -59,8 +68,8 @@ export const config: Config<Props> = {
         }
       },
       defaultProps: {
-        title: 'Welcome to our site',
-        subtitle: 'A short, compelling description of what you offer.',
+        title: 'Bienvenidos a nuestra causa',
+        subtitle: 'Una descripción breve y convincente de lo que hacemos.',
         align: 'center'
       },
       render: ({ title, subtitle, align }) => (
@@ -89,7 +98,7 @@ export const config: Config<Props> = {
           ]
         }
       },
-      defaultProps: { text: 'Heading', level: 'h2' },
+      defaultProps: { text: 'Título', level: 'h2' },
       render: ({ text, level: Level }) => {
         const sizes = {
           h1: 'text-4xl',
@@ -118,7 +127,7 @@ export const config: Config<Props> = {
           ]
         }
       },
-      defaultProps: { text: 'Some paragraph text.', align: 'left' },
+      defaultProps: { text: 'Un párrafo de texto.', align: 'left' },
       render: ({ text, align }) => (
         <div className="px-6 py-4">
           <p className={`max-w-3xl text-gray-700 ${alignClass[align]}`}>
@@ -141,7 +150,7 @@ export const config: Config<Props> = {
         }
       },
       defaultProps: {
-        label: 'Get started',
+        label: 'Donar',
         href: '#',
         variant: 'primary'
       },
@@ -163,7 +172,13 @@ export const config: Config<Props> = {
     Image: {
       label: 'Image',
       fields: {
-        src: { type: 'text' },
+        src: {
+          type: 'custom',
+          label: 'Imagen',
+          render: ({ value, onChange }) => (
+            <CloudinaryImageField value={value} onChange={onChange} />
+          )
+        },
         alt: { type: 'text' }
       },
       defaultProps: {
@@ -172,9 +187,68 @@ export const config: Config<Props> = {
       },
       render: ({ src, alt }) => (
         <div className="px-6 py-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={src} alt={alt} className="mx-auto rounded-lg" />
         </div>
       )
+    },
+    Product: {
+      label: 'Producto',
+      fields: {
+        name: { type: 'text' },
+        price: { type: 'number' },
+        image: {
+          type: 'custom',
+          label: 'Imagen',
+          render: ({ value, onChange }) => (
+            <CloudinaryImageField value={value} onChange={onChange} />
+          )
+        },
+        description: { type: 'textarea' },
+        buttonLabel: { type: 'text' }
+      },
+      defaultProps: {
+        name: 'Producto solidario',
+        price: 5000,
+        image: 'https://placehold.co/600x400',
+        description: 'Una breve descripción del producto y su impacto.',
+        buttonLabel: 'Agregar al carrito'
+      },
+      render: ({ name, price, image, description, buttonLabel }) => {
+        const { addItem } = useCart();
+        return (
+          <div className="px-6 py-4">
+            <div className="mx-auto flex max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              {image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={image}
+                  alt={name}
+                  className="h-48 w-full object-cover"
+                />
+              )}
+              <div className="flex flex-1 flex-col gap-2 p-4">
+                <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
+                {description && (
+                  <p className="text-sm text-gray-600">{description}</p>
+                )}
+                <div className="mt-auto flex items-center justify-between pt-2">
+                  <span className="text-xl font-bold text-gray-900">
+                    {formatPrice(price)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => addItem({ id: name, name, price, image })}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  >
+                    {buttonLabel}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
     },
     Spacer: {
       label: 'Spacer',

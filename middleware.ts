@@ -45,14 +45,12 @@ export async function middleware(request: NextRequest) {
   const subdomain = extractSubdomain(request);
 
   if (subdomain) {
-    // Block access to the root-domain admin from subdomains
-    if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-
     // Rewrite every subdomain path to the tenant tree:
-    //   {sub}.domain/            -> /s/{sub}        (org home / admin)
-    //   {sub}.domain/{campaign}  -> /s/{sub}/{campaign} (campaign editor)
+    //   {sub}.domain/                 -> /s/{sub}                 (public org home)
+    //   {sub}.domain/admin            -> /s/{sub}/admin           (org dashboard)
+    //   {sub}.domain/pedidos          -> /s/{sub}/pedidos         (orders)
+    //   {sub}.domain/{campaign}       -> /s/{sub}/{campaign}      (public site)
+    //   {sub}.domain/{campaign}/edit  -> /s/{sub}/{campaign}/edit (editor)
     const rewritePath = pathname === '/' ? '' : pathname;
     return NextResponse.rewrite(
       new URL(`/s/${subdomain}${rewritePath}`, request.url)

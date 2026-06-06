@@ -1,9 +1,20 @@
 import { redis } from '@/lib/redis';
 import { sanitizeSubdomain } from '@/lib/subdomains';
 
-export type CampaignType = 'crowdfunding' | 'tienda' | 'calle';
+export type CampaignType = 'crowdfunding' | 'tienda';
 
 export type CampaignStatus = 'pending' | 'sent';
+
+export type PaymentMethod = 'mercadopago' | 'cbu';
+
+/** How buyers pay for products on a campaign's public site. */
+export type CampaignPayment = {
+  method: PaymentMethod;
+  /** MercadoPago payment link (when method === 'mercadopago'). */
+  link?: string;
+  /** Bank CBU/alias buyers transfer to (when method === 'cbu'). */
+  cbu?: string;
+};
 
 export type Campaign = {
   slug: string;
@@ -11,6 +22,10 @@ export type Campaign = {
   type: CampaignType;
   prompt: string;
   status: CampaignStatus;
+  /** Cloudinary URLs of images uploaded when the campaign was created. */
+  images?: string[];
+  /** Payment configuration for checkout. */
+  payment?: CampaignPayment;
   createdAt: number;
 };
 

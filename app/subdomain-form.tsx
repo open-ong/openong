@@ -22,7 +22,7 @@ export function SubdomainForm() {
   return (
     <form action={action} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Organization name</Label>
+        <Label htmlFor="name">Nombre de la organización</Label>
         <Input
           id="name"
           name="name"
@@ -31,8 +31,8 @@ export function SubdomainForm() {
           required
         />
         <p className="text-xs text-gray-500">
-          Your organization will live at{' '}
-          <span className="font-medium">your-org.{rootDomain}</span>
+          Tu organización va a vivir en{' '}
+          <span className="font-medium">tu-org.{rootDomain}</span>
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export function SubdomainForm() {
       )}
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Creating...' : 'Create organization'}
+        {isPending ? 'Creando...' : 'Crear organización'}
       </Button>
     </form>
   );

@@ -4,17 +4,18 @@ import {
   extractText,
   isSupported
 } from '@/lib/files/extract';
+import {
+  cloudinaryConfigError,
+  uploadToCloudinary
+} from '@/lib/cloudinary';
 import type { ChatAttachment } from '@/lib/onboarding/types';
 
 /**
- * POST /api/files/upload  (multipart/form-data, field name: "file")
+ * POST /api/files/upload  (multipart/form-data, fields: "file", optional "folder")
  *
- * Accepts a single file, validates type/size, extracts text for text-like
- * files (TXT/MD/CSV), and returns `ChatAttachment` metadata.
- *
- * Storage: this MVP does NOT persist the binary anywhere. It returns metadata
- * + extracted text so the chat can attach it to a message and feed the agent.
- * TODO(prod): persist the binary to Vercel Blob / S3 and set `url`.
+ * Accepts a single file, validates type/size, persists the binary to Cloudinary
+ * (when configured), extracts text for text-like files (TXT/MD/CSV), and returns
+ * `ChatAttachment` metadata including the hosted `url`.
  */
 export async function POST(request: Request) {
   let form: FormData;
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
   }
 
   const buffer = await file.arrayBuffer();
+  const mimeType = file.type || 'application/octet-stream';
+
   let extraction;
   try {
     extraction = await extractText(buffer, file.type, file.name);
@@ -55,18 +58,35 @@ export async function POST(request: Request) {
     extraction = { extractionPending: true as const };
   }
 
+  // Persist the binary to Cloudinary so the chat / page can reference a stable
+  // URL. When Cloudinary is not configured we still return metadata (the file
+  // just won't have a hosted url).
+  const folder = (form.get('folder') as string) || 'openong';
+  let url: string | undefined;
+  let storageError: string | null = cloudinaryConfigError();
+  if (!storageError) {
+    try {
+      ({ url } = await uploadToCloudinary(buffer, folder, mimeType));
+    } catch (err) {
+      console.warn('[files/upload] Cloudinary upload failed:', err);
+      storageError =
+        err instanceof Error ? err.message : 'Cloudinary upload failed';
+    }
+  }
+
   const attachment: ChatAttachment = {
     id: crypto.randomUUID(),
     fileName: file.name,
-    mimeType: file.type || 'application/octet-stream',
+    mimeType,
     size: file.size,
+    url,
     extractedText: extraction.extractedText,
     createdAt: new Date().toISOString()
-    // url: TODO(prod) — set when binary storage is configured.
   };
 
   return NextResponse.json({
     attachment,
-    extractionPending: extraction.extractionPending
+    extractionPending: extraction.extractionPending,
+    storageError
   });
 }

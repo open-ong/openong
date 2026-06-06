@@ -1,12 +1,11 @@
 import '@puckeditor/core/puck.css';
-import type { Data } from '@puckeditor/core';
+import '@puckeditor/plugin-ai/styles.css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSubdomainData } from '@/lib/subdomains';
 import { getCampaign } from '@/lib/campaigns';
 import { getPageData } from '@/lib/pages';
-import { PageRender } from '../render';
-import { TrackView } from './track-view';
+import { CampaignEditor } from '../editor';
 
 export async function generateMetadata({
   params
@@ -15,10 +14,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { subdomain, slug } = await params;
   const campaign = await getCampaign(subdomain, slug);
-  return { title: campaign ? campaign.title : subdomain };
+  return { title: campaign ? `Editar · ${campaign.title}` : subdomain };
 }
 
-export default async function CampaignPublicPage({
+export default async function CampaignEditorPage({
   params
 }: {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -35,21 +34,24 @@ export default async function CampaignPublicPage({
     notFound();
   }
 
-  // A campaign created without page content is still valid — render it blank
-  // instead of a "doesn't exist" page.
-  const data =
-    (await getPageData(subdomain, slug)) ?? ({ content: [], root: {} } as Data);
+  const data = await getPageData(subdomain, slug);
+
+  // When the campaign was created with images, hand their hosted URLs to the
+  // builder so it can place them as Image blocks instead of placeholders.
+  const images = campaign.images ?? [];
+  const prompt =
+    images.length > 0
+      ? `${campaign.prompt}\n\nUsá estas imágenes subidas por la organización en la página (como bloques Image, con su URL exacta en "src"):\n${images.join('\n')}`
+      : campaign.prompt;
 
   return (
-    <>
-      <TrackView subdomain={subdomain} slug={slug} />
-      <PageRender
-        data={data}
-        subdomain={subdomain}
-        slug={slug}
-        payment={campaign.payment}
-      />
-    </>
+    <CampaignEditor
+      subdomain={subdomain}
+      slug={slug}
+      data={data || {}}
+      prompt={prompt}
+      autoSend={campaign.status === 'pending'}
+    />
   );
 }
 

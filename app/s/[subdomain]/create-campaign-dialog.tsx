@@ -13,9 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, HeartHandshake, ShoppingBag, Megaphone } from 'lucide-react';
+import { Plus, HeartHandshake, ShoppingBag, Upload, X } from 'lucide-react';
 import { createCampaignAction } from '@/app/actions';
-import { slugify, type CampaignType } from '@/lib/campaigns';
+import {
+  slugify,
+  type CampaignType,
+  type PaymentMethod
+} from '@/lib/campaigns';
 
 const TYPES: {
   value: CampaignType;
@@ -27,21 +31,14 @@ const TYPES: {
   {
     value: 'crowdfunding',
     label: 'Crowdfunding',
-    description: 'A campaign landing page to raise money for a cause.',
+    description: 'Una landing para recaudar fondos para una causa.',
     icon: HeartHandshake
   },
   {
     value: 'tienda',
-    label: 'Store',
-    description: 'A solidarity store to sell products or symbolic donations.',
+    label: 'Tienda',
+    description: 'Una tienda solidaria para vender productos o donaciones simbólicas.',
     icon: ShoppingBag
-  },
-  {
-    value: 'calle',
-    label: 'On the street',
-    description: 'A guide for volunteers fundraising in person. Coming soon.',
-    icon: Megaphone,
-    disabled: true
   }
 ];
 
@@ -53,6 +50,12 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
   const [slugEdited, setSlugEdited] = useState(false);
   const [type, setType] = useState<CampaignType>('crowdfunding');
   const [prompt, setPrompt] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>('mercadopago');
+  const [paymentLink, setPaymentLink] = useState('');
+  const [cbu, setCbu] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -68,7 +71,45 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
     setSlugEdited(false);
     setType('crowdfunding');
     setPrompt('');
+    setImages([]);
+    setUploading(false);
+    setPaymentMethod('mercadopago');
+    setPaymentLink('');
+    setCbu('');
     setError(null);
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const uploaded = await Promise.all(
+        Array.from(files).map(async (file) => {
+          const body = new FormData();
+          body.append('file', file);
+          body.append('folder', `openong/${subdomain}`);
+          const res = await fetch('/api/files/upload', {
+            method: 'POST',
+            body
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'Error al subir');
+          if (json.storageError) throw new Error(json.storageError);
+          return json.attachment?.url as string | undefined;
+        })
+      );
+      const urls = uploaded.filter((u): u is string => Boolean(u));
+      setImages((prev) => [...prev, ...urls]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo subir la imagen');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(url: string) {
+    setImages((prev) => prev.filter((u) => u !== url));
   }
 
   function handleOpenChange(next: boolean) {
@@ -79,11 +120,11 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
   function goToPrompt() {
     setError(null);
     if (!title.trim()) {
-      setError('Give your campaign a title.');
+      setError('Poné un título a tu campaña.');
       return;
     }
     if (!previewSlug) {
-      setError('The title must contain at least one letter or number.');
+      setError('El título debe tener al menos una letra o número.');
       return;
     }
     setStep(2);
@@ -91,15 +132,36 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
 
   function submit() {
     setError(null);
+    if (paymentMethod === 'mercadopago' && !paymentLink.trim()) {
+      setError('Ingresá el link de pago de MercadoPago.');
+      return;
+    }
+    if (paymentMethod === 'cbu' && !cbu.trim()) {
+      setError('Ingresá el CBU o alias.');
+      return;
+    }
     startTransition(async () => {
       const result = await createCampaignAction(subdomain, {
         title: title.trim(),
         type,
         slug: previewSlug,
-        prompt: prompt.trim()
+        prompt: prompt.trim(),
+        images,
+        payment: {
+          method: paymentMethod,
+          link: paymentMethod === 'mercadopago' ? paymentLink.trim() : undefined,
+          cbu: paymentMethod === 'cbu' ? cbu.trim() : undefined
+        }
       });
-      // On success the action redirects, so we only reach here on error.
-      if (result?.error) setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      if (result?.slug) {
+        // Hard navigation bypasses the Router Cache, guaranteeing a fresh
+        // server render that sees the just-created campaign.
+        window.location.href = `/${result.slug}/edit`;
+      }
     });
   }
 
@@ -108,22 +170,22 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          New campaign
+          Nueva campaña
         </Button>
       </DialogTrigger>
       <DialogContent>
         {step === 1 ? (
           <>
             <DialogHeader>
-              <DialogTitle>New campaign</DialogTitle>
+              <DialogTitle>Nueva campaña</DialogTitle>
               <DialogDescription>
-                Choose a type and a title. We&apos;ll generate the page URL.
+                Elegí un tipo y un título. Generamos la URL de la página.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Type</Label>
+                <Label>Tipo</Label>
                 <div className="grid gap-2">
                   {TYPES.map((t) => {
                     const Icon = t.icon;
@@ -156,28 +218,28 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Título</Label>
                 <Input
                   id="title"
                   value={title}
-                  placeholder="Help us fund 100 school kits"
+                  placeholder="Ayudanos a financiar 100 kits escolares"
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slug">URL path</Label>
+                <Label htmlFor="slug">Ruta de la URL</Label>
                 <Input
                   id="slug"
                   value={slugEdited ? slug : previewSlug}
-                  placeholder="school-kits"
+                  placeholder="kits-escolares"
                   onChange={(e) => {
                     setSlugEdited(true);
                     setSlug(e.target.value);
                   }}
                 />
                 <p className="text-xs text-gray-500">
-                  /{previewSlug || 'your-path'}
+                  /{previewSlug || 'tu-ruta'}
                 </p>
               </div>
 
@@ -185,16 +247,16 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
             </div>
 
             <DialogFooter>
-              <Button onClick={goToPrompt}>Next</Button>
+              <Button onClick={goToPrompt}>Siguiente</Button>
             </DialogFooter>
           </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Describe your campaign</DialogTitle>
+              <DialogTitle>Describí tu campaña</DialogTitle>
               <DialogDescription>
-                This prompt is sent to the AI to build your page when you open
-                it.
+                Este prompt se le envía a la IA para construir tu página cuando
+                la abrís.
               </DialogDescription>
             </DialogHeader>
 
@@ -204,12 +266,95 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                rows={6}
-                placeholder="Build an emotional crowdfunding page to raise $500.000 for 100 school kits. Include the story, impact tiers and a donation call to action."
+                rows={5}
+                placeholder="Creá una página emotiva de crowdfunding para recaudar $500.000 para 100 kits escolares. Incluí la historia, niveles de impacto y un llamado a donar."
                 className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
-              {error && <div className="text-sm text-red-500">{error}</div>}
             </div>
+
+            <div className="space-y-2">
+              <Label>Método de pago</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { value: 'mercadopago', label: 'MercadoPago' },
+                    { value: 'cbu', label: 'CBU / Transferencia' }
+                  ] as const
+                ).map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    onClick={() => setPaymentMethod(m.value)}
+                    className={`rounded-lg border p-2.5 text-sm font-medium transition-colors ${
+                      paymentMethod === m.value
+                        ? 'border-blue-500 bg-blue-50 text-gray-900'
+                        : 'border-input text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              {paymentMethod === 'mercadopago' ? (
+                <Input
+                  value={paymentLink}
+                  placeholder="https://mpago.la/tu-link-de-pago"
+                  onChange={(e) => setPaymentLink(e.target.value)}
+                />
+              ) : (
+                <Input
+                  value={cbu}
+                  placeholder="CBU o alias (ej: ong.solidaria.mp)"
+                  onChange={(e) => setCbu(e.target.value)}
+                />
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Imágenes (opcional)</Label>
+              <p className="text-xs text-gray-500">
+                Subí fotos para que la IA las use en la página.
+              </p>
+              {images.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {images.map((url) => (
+                    <div key={url} className="group relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt=""
+                        className="h-16 w-16 rounded-md border border-input object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(url)}
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        aria-label="Quitar imagen"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <label className="flex w-fit cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                <Upload className="h-4 w-4" />
+                {uploading ? 'Subiendo...' : 'Agregar imágenes'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploading}
+                  className="hidden"
+                  onChange={(e) => {
+                    void handleFiles(e.target.files);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+
+            {error && <div className="text-sm text-red-500">{error}</div>}
 
             <DialogFooter className="sm:justify-between">
               <Button
@@ -217,10 +362,10 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
                 onClick={() => setStep(1)}
                 disabled={isPending}
               >
-                Back
+                Volver
               </Button>
-              <Button onClick={submit} disabled={isPending}>
-                {isPending ? 'Creating...' : 'Create campaign'}
+              <Button onClick={submit} disabled={isPending || uploading}>
+                {isPending ? 'Creando...' : 'Crear campaña'}
               </Button>
             </DialogFooter>
           </>

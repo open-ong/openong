@@ -7,8 +7,15 @@ import {
   getCampaigns,
   slugify,
   updateCampaign,
-  type CampaignType
+  type CampaignType,
+  type CampaignPayment
 } from '@/lib/campaigns';
+import {
+  getOrders,
+  updateOrderStatus,
+  paidOrderStatus,
+  type OrderStatus
+} from '@/lib/orders';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { rootDomain, protocol } from '@/lib/utils';
@@ -47,7 +54,7 @@ export async function createSubdomainAction(
     createdAt: Date.now()
   });
 
-  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}`);
+  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}/admin`);
 }
 
 export async function deleteSubdomainAction(
@@ -63,11 +70,19 @@ export async function deleteSubdomainAction(
 
 type CreateCampaignState = {
   error?: string;
+  slug?: string;
 };
 
 export async function createCampaignAction(
   subdomain: string,
-  data: { title: string; type: CampaignType; slug: string; prompt: string }
+  data: {
+    title: string;
+    type: CampaignType;
+    slug: string;
+    prompt: string;
+    images?: string[];
+    payment?: CampaignPayment;
+  }
 ): Promise<CreateCampaignState> {
   const sub = sanitizeSubdomain(subdomain);
   const title = data.title?.trim();
@@ -95,14 +110,18 @@ export async function createCampaignAction(
     title,
     type: data.type,
     prompt,
+    images: data.images?.filter(Boolean) ?? [],
+    payment: data.payment,
     status: 'pending',
     createdAt: Date.now()
   });
 
   revalidatePath(`/s/${sub}`);
 
-  // Web campaigns open the editor, where the prompt is sent automatically.
-  redirect(`/${slug}`);
+  // Return the slug so the client can hard-navigate to the editor. A server
+  // redirect here would trigger a soft navigation that can serve a stale
+  // (pre-creation) Router Cache entry for the same path.
+  return { slug };
 }
 
 export async function markCampaignSentAction(
@@ -112,4 +131,30 @@ export async function markCampaignSentAction(
   await updateCampaign(sanitizeSubdomain(subdomain), slug, {
     status: 'sent'
   });
+}
+
+export async function updateOrderStatusAction(
+  subdomain: string,
+  orderId: string,
+  status: OrderStatus
+): Promise<void> {
+  const sub = sanitizeSubdomain(subdomain);
+  await updateOrderStatus(sub, orderId, status);
+  revalidatePath(`/s/${sub}`);
+}
+
+/**
+ * Approves a `por_validar` order. The destination depends on the campaign type:
+ * store orders go to `pago_pendiente_envio`, crowdfunding goes straight to
+ * `entregado` (no shipment).
+ */
+export async function approveOrderAction(
+  subdomain: string,
+  orderId: string
+): Promise<void> {
+  const sub = sanitizeSubdomain(subdomain);
+  const order = (await getOrders(sub)).find((o) => o.id === orderId);
+  if (!order) return;
+  await updateOrderStatus(sub, orderId, paidOrderStatus(order.campaignType));
+  revalidatePath(`/s/${sub}`);
 }
