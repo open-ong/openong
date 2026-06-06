@@ -58,7 +58,7 @@
 .openong-landing h1,
 .openong-landing h2,
 .openong-landing h3 { font-family: var(--font-head); font-weight: 600; line-height: 1.12; letter-spacing: -0.02em; color: var(--ink); }
-.openong-landing .h-display { font-size: clamp(2.6rem, 6.2vw, 5rem); font-weight: 650; line-height: 1.08; }
+.openong-landing .h-display { font-size: clamp(2.25rem, 6.2vw, 50px); font-weight: 650; line-height: 1.08; }
 .openong-landing .h2 { font-size: clamp(1.9rem, 3.6vw, 3rem); font-weight: 600; line-height: 1.12; }
 .openong-landing .h3 { font-size: clamp(1.15rem, 1.6vw, 1.4rem); font-weight: 600; line-height: 1.2; }
 .openong-landing .lead { font-size: clamp(1.05rem, 1.5vw, 1.3rem); color: var(--ink-2); line-height: 1.5; }
