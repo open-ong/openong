@@ -20,7 +20,7 @@ export default async function HomePage() {
             {rootDomain}
           </h1>
           <p className="mt-3 text-lg text-gray-600">
-            Create your own subdomain with a custom emoji
+            Fundraising sites for your organization, built with AI
           </p>
         </div>
 

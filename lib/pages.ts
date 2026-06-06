@@ -1,15 +1,20 @@
 import type { Data } from '@puckeditor/core';
 import { redis } from '@/lib/redis';
+import { sanitizeSubdomain } from '@/lib/subdomains';
 
-function sanitize(subdomain: string) {
-  return subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
+function pageKey(subdomain: string, slug: string) {
+  return `page:${sanitizeSubdomain(subdomain)}:${slug}`;
 }
 
-export async function getPageData(subdomain: string) {
-  const data = await redis.get<Data>(`page:${sanitize(subdomain)}`);
+export async function getPageData(subdomain: string, slug: string) {
+  const data = await redis.get<Data>(pageKey(subdomain, slug));
   return data;
 }
 
-export async function savePageData(subdomain: string, data: Data) {
-  await redis.set(`page:${sanitize(subdomain)}`, data);
+export async function savePageData(
+  subdomain: string,
+  slug: string,
+  data: Data
+) {
+  await redis.set(pageKey(subdomain, slug), data);
 }
