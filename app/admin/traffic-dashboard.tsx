@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import type { TrafficDay } from '@/lib/traffic';
+import { useState, useTransition } from 'react';
+import { TRAFFIC_RANGES, type TrafficStats } from '@/lib/posthog/traffic-types';
+import { fetchTrafficStats } from './traffic-actions';
 import type { OrderStatus } from '@/lib/orders';
 
 type DashCampaign = { slug: string; title: string };
@@ -113,43 +114,38 @@ function Kpi({ label, value }: { label: string; value: string }) {
 export function TrafficDashboard({
   subdomain,
   campaigns,
-  traffic,
+  initialStats,
   orders
 }: {
   subdomain: string;
   campaigns: DashCampaign[];
-  traffic: TrafficDay[];
+  initialStats: TrafficStats;
   orders: DashOrder[];
 }) {
   const [filter, setFilter] = useState<string>('all');
+  const [days, setDays] = useState<number>(initialStats.days);
+  const [stats, setStats] = useState<TrafficStats>(initialStats);
+  const [, startTransition] = useTransition();
 
   const slugTitle = Object.fromEntries(
     campaigns.map((c) => [c.slug, c.title])
   ) as Record<string, string>;
 
-  // Per-day visits, respecting the campaign filter.
-  const visitsSeries = traffic.map((d) =>
-    filter === 'all'
-      ? Object.values(d.views).reduce((a, b) => a + b, 0)
-      : d.views[filter] ?? 0
-  );
-  const totalVisits = visitsSeries.reduce((a, b) => a + b, 0);
+  function refresh(nextDays: number, nextFilter: string) {
+    startTransition(async () => {
+      setStats(
+        await fetchTrafficStats(
+          nextDays,
+          nextFilter === 'all' ? undefined : nextFilter
+        )
+      );
+    });
+  }
 
-  // Org-level uniques are not broken down per campaign.
-  const uniques =
-    filter === 'all'
-      ? traffic.reduce((a, d) => a + d.uniques, 0)
-      : null;
-
-  const periodStartTs =
-    Date.now() - traffic.length * 86_400_000;
-  const ordersInPeriod = orders.filter(
-    (o) =>
-      o.createdAt >= periodStartTs &&
-      (filter === 'all' || o.campaignSlug === filter)
-  );
-  const conversion =
-    totalVisits > 0 ? (ordersInPeriod.length / totalVisits) * 100 : 0;
+  const visitsSeries = stats.series.map((p) => p.visits);
+  const totalVisits = stats.totalVisits;
+  const uniques = stats.uniques;
+  const conversion = stats.conversion;
 
   const trafficDelta =
     visitsSeries[0] > 0
@@ -180,13 +176,36 @@ export function TrafficDashboard({
         </span>
 
         <div className="ml-auto flex items-center gap-3">
+          <label className="sr-only" htmlFor="range-filter">
+            Filtrar por período
+          </label>
+          <select
+            id="range-filter"
+            value={days}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setDays(next);
+              refresh(next, filter);
+            }}
+            className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 shadow-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+          >
+            {TRAFFIC_RANGES.map((r) => (
+              <option key={r} value={r}>
+                Últimos {r} días
+              </option>
+            ))}
+          </select>
           <label className="sr-only" htmlFor="campaign-filter">
             Filtrar por campaña
           </label>
           <select
             id="campaign-filter"
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setFilter(next);
+              refresh(days, next);
+            }}
             className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 shadow-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
           >
             <option value="all">Todas las campañas</option>
@@ -270,18 +289,15 @@ export function TrafficDashboard({
         {/* RIGHT — traffic KPIs + chart */}
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2">
-            <Kpi label="Visitas · 14d" value={fmt(totalVisits)} />
-            <Kpi
-              label="Únicos · 14d"
-              value={uniques === null ? '—' : fmt(uniques)}
-            />
+            <Kpi label={`Visitas · ${days}d`} value={fmt(totalVisits)} />
+            <Kpi label={`Únicos · ${days}d`} value={fmt(uniques)} />
             <Kpi label="Conversión" value={`${conversion.toFixed(1)}%`} />
           </div>
 
           <div className="relative rounded-lg border border-gray-200 p-3">
             <div className="flex items-baseline justify-between">
               <span className="font-mono text-[0.6rem] uppercase tracking-wide text-gray-400">
-                Tráfico · 14 días
+                Tráfico · {days} días
               </span>
               {totalVisits > 0 && (
                 <span

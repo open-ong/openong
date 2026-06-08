@@ -37,13 +37,9 @@ export async function deleteOrganizationAction(
 
   await Promise.all([
     redis.del(`org:${orgId}:campaigns`),
-    redis.del(`org:${orgId}:orders`),
-    redis.del(`org:${orgId}:traffic:views`)
+    redis.del(`org:${orgId}:orders`)
   ]);
-  const extra = [
-    ...(await redis.keys(`org:${orgId}:page:*`)),
-    ...(await redis.keys(`org:${orgId}:traffic:uniq:*`))
-  ];
+  const extra = await redis.keys(`org:${orgId}:page:*`);
   if (extra.length) {
     await redis.del(...extra);
   }

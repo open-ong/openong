@@ -1,9 +1,10 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaigns } from '@/lib/campaigns';
 import { HeartHandshake, ShoppingBag, ArrowRight } from 'lucide-react';
+import { TrackLanding } from './track-landing';
+import { TrackedCampaignLink } from './tracked-campaign-link';
 
 export async function generateMetadata({
   params
@@ -43,6 +44,7 @@ export default async function OngPublicPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <TrackLanding org={subdomain} />
       <main className="mx-auto max-w-2xl px-4 py-16 md:py-24">
         <header className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
@@ -68,9 +70,9 @@ export default async function OngPublicPage({
                 const meta = TYPE_META[campaign.type];
                 const Icon = meta.icon;
                 return (
-                  <Link
+                  <TrackedCampaignLink
                     key={campaign.slug}
-                    href={`/${campaign.slug}`}
+                    slug={campaign.slug}
                     className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -86,7 +88,7 @@ export default async function OngPublicPage({
                       <span className="hidden sm:inline">{meta.cta}</span>
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </span>
-                  </Link>
+                  </TrackedCampaignLink>
                 );
               })}
             </div>

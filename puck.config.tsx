@@ -1,6 +1,7 @@
 import type { Config } from '@puckeditor/core';
 import { useCart, formatPrice } from '@/lib/cart/cart-context';
 import { CloudinaryImageField } from '@/components/cloudinary-image-field';
+import { PH, capture } from '@/lib/posthog/events';
 
 type Props = {
   Hero: {
@@ -225,7 +226,7 @@ export const config: Config<Props> = {
         buttonLabel: 'Agregar al carrito'
       },
       render: ({ name, price, image, description, buttonLabel }) => {
-        const { addItem } = useCart();
+        const { addItem, enabled } = useCart();
         return (
           <div className="px-6 py-4">
             <div className="mx-auto flex max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -248,7 +249,10 @@ export const config: Config<Props> = {
                   </span>
                   <button
                     type="button"
-                    onClick={() => addItem({ id: name, name, price, image })}
+                    onClick={() => {
+                      addItem({ id: name, name, price, image });
+                      if (enabled) capture(PH.addToCart, { product: name, price });
+                    }}
                     className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                   >
                     {buttonLabel}

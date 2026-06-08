@@ -60,6 +60,7 @@ export default clerkMiddleware(async (_auth, request) => {
   if (
     subdomain &&
     !pathname.startsWith('/api') &&
+    !pathname.startsWith('/ingest') &&
     !pathname.startsWith('/_next')
   ) {
     if (
