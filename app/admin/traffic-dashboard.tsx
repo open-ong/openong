@@ -251,7 +251,7 @@ export function TrafficDashboard({
                       </td>
                       <td className="whitespace-nowrap px-3 py-2 text-right">
                         <span className="font-semibold text-gray-900">
-                          €{fmt(o.total)}
+                          ${fmt(o.total)}
                         </span>
                         <span
                           className={`ml-2 inline-block rounded-full px-1.5 py-0.5 text-[0.55rem] font-medium ${ORDER_STATUS[o.status].cls}`}

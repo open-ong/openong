@@ -29,6 +29,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 });
   }
 
+  const { userId, orgSlug } = await auth();
+  if (!userId || !orgSlug) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (session.subdomain && session.subdomain !== orgSlug) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const answeredKeys = new Set(Object.keys(session.answers));
   if (!force && !canComplete(answeredKeys)) {
     return NextResponse.json(
@@ -50,11 +58,7 @@ export async function POST(request: Request) {
 
   await saveSession(session);
 
-  const { orgSlug } = await auth();
-  const slug = orgSlug ?? session.subdomain;
-  if (slug) {
-    await markOrgOnboarded(slug);
-  }
+  await markOrgOnboarded(orgSlug);
 
   return NextResponse.json({ session });
 }

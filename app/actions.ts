@@ -48,7 +48,7 @@ export async function deleteOrganizationAction(
     await redis.del(...extra);
   }
 
-  revalidatePath('/admin');
+  revalidatePath('/superadmin');
   return { success: 'Organization deleted successfully' };
 }
 

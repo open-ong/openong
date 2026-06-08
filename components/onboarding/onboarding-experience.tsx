@@ -45,12 +45,13 @@ export function OnboardingExperience({
   const finalizeAndGo = useCallback(async () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const ok = await complete(false);
-    if (ok) {
-      window.location.href = '/admin';
-    } else {
-      finishedRef.current = false;
+    let ok = false;
+    try {
+      ok = await complete(false);
+    } finally {
+      if (!ok) finishedRef.current = false;
     }
+    if (ok) window.location.href = '/admin';
   }, [complete]);
 
   if (status === 'loading' || !session) {

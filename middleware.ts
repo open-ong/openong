@@ -9,6 +9,7 @@ const ROOT_DOMAIN_PATHS = [
   '/campaigns',
   '/superadmin',
   '/create',
+  '/switch',
   '/sign-in',
   '/sign-up'
 ];
