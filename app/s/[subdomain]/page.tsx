@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSubdomainData } from '@/lib/subdomains';
+import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaigns } from '@/lib/campaigns';
 import { HeartHandshake, ShoppingBag, ArrowRight } from 'lucide-react';
 
@@ -11,11 +11,11 @@ export async function generateMetadata({
   params: Promise<{ subdomain: string }>;
 }): Promise<Metadata> {
   const { subdomain } = await params;
-  const data = await getSubdomainData(subdomain);
+  const org = await getOrgBySlug(subdomain);
   return {
-    title: data ? data.name : subdomain,
-    description: data
-      ? `Conocé las iniciativas de ${data.name} y sumate a la causa.`
+    title: org ? org.name : subdomain,
+    description: org
+      ? `Conocé las iniciativas de ${org.name} y sumate a la causa.`
       : undefined
   };
 }
@@ -33,20 +33,20 @@ export default async function OngPublicPage({
   params: Promise<{ subdomain: string }>;
 }) {
   const { subdomain } = await params;
-  const data = await getSubdomainData(subdomain);
+  const org = await getOrgBySlug(subdomain);
 
-  if (!data) {
+  if (!org) {
     notFound();
   }
 
-  const campaigns = await getCampaigns(subdomain);
+  const campaigns = await getCampaigns(org.id);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <main className="mx-auto max-w-2xl px-4 py-16 md:py-24">
         <header className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
-            {data.name}
+            {org.name}
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-gray-600">
             Conocé nuestras iniciativas y sumate a la causa.

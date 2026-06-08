@@ -1,5 +1,18 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { rootDomain } from '@/lib/utils';
+import { clerkMiddleware } from '@clerk/nextjs/server';
+import { protocol, rootDomain } from '@/lib/utils';
+
+const ROOT_DOMAIN_PATHS = [
+  '/admin',
+  '/onboarding',
+  '/pedidos',
+  '/campaigns',
+  '/superadmin',
+  '/create',
+  '/switch',
+  '/sign-in',
+  '/sign-up'
+];
 
 function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;
@@ -40,35 +53,37 @@ function extractSubdomain(request: NextRequest): string | null {
   return isSubdomain ? hostname.replace(`.${rootDomainFormatted}`, '') : null;
 }
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default clerkMiddleware(async (_auth, request) => {
+  const { pathname, search } = request.nextUrl;
   const subdomain = extractSubdomain(request);
 
-  if (subdomain) {
-    // Rewrite every subdomain path to the tenant tree:
-    //   {sub}.domain/                 -> /s/{sub}                 (public org home)
-    //   {sub}.domain/admin            -> /s/{sub}/admin           (org dashboard)
-    //   {sub}.domain/pedidos          -> /s/{sub}/pedidos         (orders)
-    //   {sub}.domain/{campaign}       -> /s/{sub}/{campaign}      (public site)
-    //   {sub}.domain/{campaign}/edit  -> /s/{sub}/{campaign}/edit (editor)
+  if (
+    subdomain &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/_next')
+  ) {
+    if (
+      ROOT_DOMAIN_PATHS.some(
+        (p) => pathname === p || pathname.startsWith(`${p}/`)
+      )
+    ) {
+      return NextResponse.redirect(
+        `${protocol}://${rootDomain}${pathname}${search}`
+      );
+    }
+
     const rewritePath = pathname === '/' ? '' : pathname;
-    return NextResponse.rewrite(
-      new URL(`/s/${subdomain}${rewritePath}`, request.url)
-    );
+    const url = new URL(`/s/${subdomain}${rewritePath}`, request.url);
+    url.search = search;
+    return NextResponse.rewrite(url);
   }
 
-  // On the root domain, allow normal access
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except for:
-     * 1. /api routes
-     * 2. /_next (Next.js internals)
-     * 3. all root files inside /public (e.g. /favicon.ico)
-     */
-    '/((?!api|_next|[\\w-]+\\.\\w+).*)'
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpg|jpeg|gif|png|svg|ico|webp|woff2?|ttf|otf|map|txt|xml|csv)).*)',
+    '/(api|trpc)(.*)'
   ]
 };

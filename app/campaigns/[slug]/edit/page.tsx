@@ -2,39 +2,40 @@ import '@puckeditor/core/puck.css';
 import '@puckeditor/plugin-ai/styles.css';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSubdomainData } from '@/lib/subdomains';
+import { requireActiveOrg } from '@/lib/org-context';
+import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaign } from '@/lib/campaigns';
 import { getPageData } from '@/lib/pages';
-import { CampaignEditor } from '../editor';
+import { auth } from '@clerk/nextjs/server';
+import { CampaignEditor } from './editor';
 
 export async function generateMetadata({
   params
 }: {
-  params: Promise<{ subdomain: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { subdomain, slug } = await params;
-  const campaign = await getCampaign(subdomain, slug);
-  return { title: campaign ? `Editar · ${campaign.title}` : subdomain };
+  const { slug } = await params;
+  const { orgSlug } = await auth();
+  const org = orgSlug ? await getOrgBySlug(orgSlug) : null;
+  const campaign = org ? await getCampaign(org.id, slug) : null;
+  return { title: campaign ? `Editar · ${campaign.title}` : slug };
 }
 
 export default async function CampaignEditorPage({
   params
 }: {
-  params: Promise<{ subdomain: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { subdomain, slug } = await params;
+  const { slug } = await params;
 
-  const org = await getSubdomainData(subdomain);
-  if (!org) {
-    notFound();
-  }
+  const access = await requireActiveOrg();
 
-  const campaign = await getCampaign(subdomain, slug);
+  const campaign = await getCampaign(access.orgId, slug);
   if (!campaign) {
     notFound();
   }
 
-  const data = await getPageData(subdomain, slug);
+  const data = await getPageData(access.orgId, slug);
 
   // When the campaign was created with images, hand their hosted URLs to the
   // builder so it can place them as Image blocks instead of placeholders.
@@ -46,7 +47,7 @@ export default async function CampaignEditorPage({
 
   return (
     <CampaignEditor
-      subdomain={subdomain}
+      subdomain={access.slug}
       slug={slug}
       data={data || {}}
       prompt={prompt}

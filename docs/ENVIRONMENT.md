@@ -14,7 +14,17 @@ KV_REST_API_URL=
 KV_REST_API_TOKEN=
 
 # Root domain for multi-tenant subdomains (defaults to localhost:3000).
+# For local cross-subdomain auth use lvh.me (resolves to 127.0.0.1 and shares
+# cookies across *.lvh.me): NEXT_PUBLIC_ROOT_DOMAIN=lvh.me:3000
 NEXT_PUBLIC_ROOT_DOMAIN=localhost:3000
+
+# ─────────────────────────────────────────────────────────────
+# Clerk authentication (organizations only) — REQUIRED
+# ─────────────────────────────────────────────────────────────
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
 # ─────────────────────────────────────────────────────────────
 # Onboarding text agent (OPTIONAL)
@@ -57,3 +67,30 @@ NEXT_PUBLIC_ONBOARDING_VOICE_ENABLED=false
 | `NEXT_PUBLIC_ONBOARDING_VOICE_ENABLED` | Voice block shown  | Text-only onboarding (still complete)     |
 
 Nothing in the above is required to run the onboarding by text locally.
+
+## Clerk setup (dashboard)
+
+Auth is **organizations only** (no personal accounts). Configure the Clerk
+instance once:
+
+1. **Organizations**: enable Organizations and disable personal accounts /
+   personal workspaces so every user acts inside an org. Under *Organizations
+   Settings*, also enable **organization slugs** — the slug IS the tenant
+   subdomain, so `createOrganization({ slug })` fails with "organization slugs
+   not enabled" until this is on.
+2. **Sign-in methods**: enable **Google OAuth** and **Email verification code
+   (OTP)**.
+3. **Superadmins**: set `publicMetadata.role = "superadmin"` on the users that
+   should reach `/superadmin` and browse every ONG. The role is read from the
+   user's `publicMetadata` server-side, so no session-token customization is
+   needed.
+4. **Domains (production)**: add the root domain to the Clerk instance. The
+   authenticated area lives on the root domain (`/admin`, `/onboarding`,
+   `/pedidos`, `/campaigns/...`, `/superadmin`); tenant subdomains only serve
+   public pages, so the session does not need to be shared across subdomains.
+
+The onboarding-completed flag is stored per organization in Clerk
+`publicMetadata.onboardingCompletedAt` — there are no webhooks and no org/user
+duplication in Redis. Redis only holds operational data keyed by organization
+id (`org:{orgId}:campaigns`, `org:{orgId}:orders`, `org:{orgId}:page:{slug}`,
+`org:{orgId}:traffic:*`).

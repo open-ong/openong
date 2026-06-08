@@ -160,7 +160,7 @@ export function CreateCampaignDialog({ subdomain }: { subdomain: string }) {
       if (result?.slug) {
         // Hard navigation bypasses the Router Cache, guaranteeing a fresh
         // server render that sees the just-created campaign.
-        window.location.href = `/${result.slug}/edit`;
+        window.location.href = `/campaigns/${result.slug}/edit`;
       }
     });
   }

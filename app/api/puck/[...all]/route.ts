@@ -1,7 +1,12 @@
 import { puckHandler } from '@puckeditor/cloud-client';
+import { auth } from '@clerk/nextjs/server';
 import { OJITOS_FELICES_DEMO_CONTEXT } from '@/lib/demo-campaign-prompt';
 
-const handleRequest = (request: Request) => {
+const handleRequest = async (request: Request) => {
+  const { userId } = await auth();
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 });
+  }
   return puckHandler(request, {
     ai: {
       context: `

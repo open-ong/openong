@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordView } from '@/lib/traffic';
+import { getOrgBySlug } from '@/lib/orgs';
 
 const VISITOR_COOKIE = 'oo_vid';
 const ONE_YEAR = 60 * 60 * 24 * 365;
@@ -25,6 +26,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  const org = await getOrgBySlug(subdomain);
+  if (!org) {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
   let visitorId = request.cookies.get(VISITOR_COOKIE)?.value;
   const response = NextResponse.json({ ok: true });
 
@@ -38,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await recordView({ subdomain, slug, visitorId });
+    await recordView({ orgId: org.id, slug, visitorId });
   } catch {
     // Analytics must never break the page; swallow write errors.
   }

@@ -2,7 +2,7 @@ import '@puckeditor/core/puck.css';
 import type { Data } from '@puckeditor/core';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getSubdomainData } from '@/lib/subdomains';
+import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaign } from '@/lib/campaigns';
 import { getPageData } from '@/lib/pages';
 import { PageRender } from '../render';
@@ -14,7 +14,8 @@ export async function generateMetadata({
   params: Promise<{ subdomain: string; slug: string }>;
 }): Promise<Metadata> {
   const { subdomain, slug } = await params;
-  const campaign = await getCampaign(subdomain, slug);
+  const org = await getOrgBySlug(subdomain);
+  const campaign = org ? await getCampaign(org.id, slug) : null;
   return { title: campaign ? campaign.title : subdomain };
 }
 
@@ -25,12 +26,12 @@ export default async function CampaignPublicPage({
 }) {
   const { subdomain, slug } = await params;
 
-  const org = await getSubdomainData(subdomain);
+  const org = await getOrgBySlug(subdomain);
   if (!org) {
     notFound();
   }
 
-  const campaign = await getCampaign(subdomain, slug);
+  const campaign = await getCampaign(org.id, slug);
   if (!campaign) {
     notFound();
   }
@@ -38,7 +39,7 @@ export default async function CampaignPublicPage({
   // A campaign created without page content is still valid — render it blank
   // instead of a "doesn't exist" page.
   const data =
-    (await getPageData(subdomain, slug)) ?? ({ content: [], root: {} } as Data);
+    (await getPageData(org.id, slug)) ?? ({ content: [], root: {} } as Data);
 
   return (
     <>

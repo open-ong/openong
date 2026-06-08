@@ -1,7 +1,8 @@
 'use server';
 
 import { redis } from '@/lib/redis';
-import { sanitizeSubdomain } from '@/lib/subdomains';
+import { resolveOrgAccess, isSuperadmin } from '@/lib/org-context';
+import { deleteOrg } from '@/lib/orgs';
 import {
   addCampaign,
   getCampaigns,
@@ -18,54 +19,36 @@ import {
   type OrderStatus
 } from '@/lib/orders';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { rootDomain, protocol } from '@/lib/utils';
 
-export async function createSubdomainAction(
+export async function deleteOrganizationAction(
   prevState: any,
   formData: FormData
 ) {
-  const name = (formData.get('name') as string)?.trim();
-
-  if (!name) {
-    return { success: false, error: 'Name is required' };
+  if (!(await isSuperadmin())) {
+    return { error: 'No autorizado' };
   }
 
-  const sanitizedSubdomain = sanitizeSubdomain(name);
-
-  if (!sanitizedSubdomain) {
-    return {
-      name,
-      success: false,
-      error: 'Name must contain at least one letter or number'
-    };
+  const orgId = formData.get('orgId') as string;
+  if (!orgId) {
+    return { error: 'Missing organization id' };
   }
 
-  const exists = await redis.get(`subdomain:${sanitizedSubdomain}`);
-  if (exists) {
-    return {
-      name,
-      success: false,
-      error: 'This organization already exists'
-    };
+  await deleteOrg(orgId);
+
+  await Promise.all([
+    redis.del(`org:${orgId}:campaigns`),
+    redis.del(`org:${orgId}:orders`),
+    redis.del(`org:${orgId}:traffic:views`)
+  ]);
+  const extra = [
+    ...(await redis.keys(`org:${orgId}:page:*`)),
+    ...(await redis.keys(`org:${orgId}:traffic:uniq:*`))
+  ];
+  if (extra.length) {
+    await redis.del(...extra);
   }
 
-  await redis.set(`subdomain:${sanitizedSubdomain}`, {
-    name,
-    createdAt: Date.now()
-  });
-
-  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}/admin`);
-}
-
-export async function deleteSubdomainAction(
-  prevState: any,
-  formData: FormData
-) {
-  const subdomain = formData.get('subdomain') as string;
-  await redis.del(`subdomain:${subdomain}`);
-  await redis.del(`campaigns:${subdomain}`);
-  revalidatePath('/admin');
+  revalidatePath('/superadmin');
   return { success: 'Organization deleted successfully' };
 }
 
@@ -85,17 +68,26 @@ export async function createCampaignAction(
     payment?: CampaignPayment;
   }
 ): Promise<CreateCampaignState> {
-  const sub = sanitizeSubdomain(subdomain);
+  const result = await resolveOrgAccess(subdomain);
+  if (!result.ok) {
+    return { error: 'No autorizado' };
+  }
+  if (!result.access.canCreateCampaign) {
+    return { error: 'No autorizado para crear campañas' };
+  }
+
+  const orgId = result.access.orgId;
   const title = data.title?.trim();
+
+  if (!title) {
+    return { error: 'Title is required' };
+  }
+
   const prompt = buildDemoCampaignPrompt({
     type: data.type,
     title,
     userPrompt: data.prompt
   });
-
-  if (!title) {
-    return { error: 'Title is required' };
-  }
 
   let slug = slugify(data.slug || title);
   if (!slug) {
@@ -103,14 +95,14 @@ export async function createCampaignAction(
   }
 
   // Ensure slug is unique within this organization.
-  const campaigns = await getCampaigns(sub);
+  const campaigns = await getCampaigns(orgId);
   if (campaigns.some((c) => c.slug === slug)) {
     let i = 2;
     while (campaigns.some((c) => c.slug === `${slug}-${i}`)) i++;
     slug = `${slug}-${i}`;
   }
 
-  await addCampaign(sub, {
+  await addCampaign(orgId, {
     slug,
     title,
     type: data.type,
@@ -121,11 +113,8 @@ export async function createCampaignAction(
     createdAt: Date.now()
   });
 
-  revalidatePath(`/s/${sub}`);
+  revalidatePath(`/s/${result.access.slug}`);
 
-  // Return the slug so the client can hard-navigate to the editor. A server
-  // redirect here would trigger a soft navigation that can serve a stale
-  // (pre-creation) Router Cache entry for the same path.
   return { slug };
 }
 
@@ -133,9 +122,9 @@ export async function markCampaignSentAction(
   subdomain: string,
   slug: string
 ): Promise<void> {
-  await updateCampaign(sanitizeSubdomain(subdomain), slug, {
-    status: 'sent'
-  });
+  const result = await resolveOrgAccess(subdomain);
+  if (!result.ok) return;
+  await updateCampaign(result.access.orgId, slug, { status: 'sent' });
 }
 
 export async function updateOrderStatusAction(
@@ -143,9 +132,10 @@ export async function updateOrderStatusAction(
   orderId: string,
   status: OrderStatus
 ): Promise<void> {
-  const sub = sanitizeSubdomain(subdomain);
-  await updateOrderStatus(sub, orderId, status);
-  revalidatePath(`/s/${sub}`);
+  const result = await resolveOrgAccess(subdomain);
+  if (!result.ok) return;
+  await updateOrderStatus(result.access.orgId, orderId, status);
+  revalidatePath(`/s/${result.access.slug}`);
 }
 
 /**
@@ -157,9 +147,11 @@ export async function approveOrderAction(
   subdomain: string,
   orderId: string
 ): Promise<void> {
-  const sub = sanitizeSubdomain(subdomain);
-  const order = (await getOrders(sub)).find((o) => o.id === orderId);
+  const result = await resolveOrgAccess(subdomain);
+  if (!result.ok) return;
+  const orgId = result.access.orgId;
+  const order = (await getOrders(orgId)).find((o) => o.id === orderId);
   if (!order) return;
-  await updateOrderStatus(sub, orderId, paidOrderStatus(order.campaignType));
-  revalidatePath(`/s/${sub}`);
+  await updateOrderStatus(orgId, orderId, paidOrderStatus(order.campaignType));
+  revalidatePath(`/s/${result.access.slug}`);
 }

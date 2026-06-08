@@ -4,10 +4,11 @@ import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Loader2, ArrowUpRight, Building2 } from 'lucide-react';
-import { deleteSubdomainAction } from '@/app/actions';
+import { deleteOrganizationAction } from '@/app/actions';
 import { rootDomain, protocol } from '@/lib/utils';
 
 type Tenant = {
+  id: string;
   subdomain: string;
   name: string;
   createdAt: number;
@@ -55,7 +56,7 @@ function TenantGrid({
       {tenants.map((tenant) => {
         const url = `${protocol}://${tenant.subdomain}.${rootDomain}`;
         return (
-          <a key={tenant.subdomain} href={url} className="group block">
+          <a key={tenant.id} href={url} className="group block">
             <Card className="h-full transition-shadow hover:shadow-md">
               <CardContent className="flex h-full flex-col gap-4 p-5">
                 <div className="flex items-start justify-between">
@@ -63,11 +64,7 @@ function TenantGrid({
                     <Building2 className="h-5 w-5" />
                   </div>
                   <form action={action} onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="hidden"
-                      name="subdomain"
-                      value={tenant.subdomain}
-                    />
+                    <input type="hidden" name="orgId" value={tenant.id} />
                     <Button
                       variant="ghost"
                       size="icon"
@@ -108,7 +105,7 @@ function TenantGrid({
 
 export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
   const [state, action, isPending] = useActionState<DeleteState, FormData>(
-    deleteSubdomainAction,
+    deleteOrganizationAction,
     {}
   );
 

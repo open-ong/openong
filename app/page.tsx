@@ -124,7 +124,7 @@ export default function HomePage() {
                       <div className="stat">
                         <div className="k">Recaudado</div>
                         <div className="v">
-                          €48,2k<small>▲ 18%</small>
+                          $48,2k<small>▲ 18%</small>
                         </div>
                       </div>
                       <div className="stat">
@@ -141,7 +141,7 @@ export default function HomePage() {
                     <div className="goal">
                       <div className="row">
                         <span className="lbl">Campaña · Agua limpia</span>
-                        <span className="amt">€48.200 / €60.000</span>
+                        <span className="amt">$48.200 / $60.000</span>
                       </div>
                       <div className="bar">
                         <i id="goalbar" style={{ width: 0 }} />
@@ -163,7 +163,7 @@ export default function HomePage() {
                 <span className="av">IA</span>
                 <span className="tx">
                   <b>Donación recurrente</b>
-                  <span>Nuevo socio · €15/mes</span>
+                  <span>Nuevo socio · $15/mes</span>
                 </span>
               </div>
             </div>

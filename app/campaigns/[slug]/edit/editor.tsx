@@ -7,6 +7,7 @@ import { createAiPlugin } from '@puckeditor/plugin-ai';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import config from '@/puck.config';
 import { markCampaignSentAction } from '@/app/actions';
+import { protocol, rootDomain } from '@/lib/utils';
 
 const AUTOSAVE_DELAY_MS = 1000;
 
@@ -112,7 +113,7 @@ export function CampaignEditor({
         ),
         headerActions: () => (
           <a
-            href={`/${slug}`}
+            href={`${protocol}://${subdomain}.${rootDomain}/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700"
