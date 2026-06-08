@@ -10,8 +10,6 @@ type Status = 'idle' | 'loading' | 'ready' | 'error';
 
 export type UseOnboarding = ReturnType<typeof useOnboarding>;
 
-const STORAGE_KEY = 'onboarding:sessionId';
-
 /**
  * Client state machine for the onboarding chat.
  * Owns the session, message sending, attachment upload and completion.
@@ -23,6 +21,10 @@ export function useOnboarding(subdomain?: string) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
+
+  const storageKey = subdomain
+    ? `onboarding:sessionId:${subdomain}`
+    : 'onboarding:sessionId';
 
   const loadSession = useCallback(async (id: string): Promise<boolean> => {
     const res = await fetch(`/api/onboarding/session/${id}`);
@@ -42,11 +44,11 @@ export function useOnboarding(subdomain?: string) {
     const data = await res.json();
     setSession(data.session);
     try {
-      localStorage.setItem(STORAGE_KEY, data.session.id);
+      localStorage.setItem(storageKey, data.session.id);
     } catch {
       /* ignore storage errors */
     }
-  }, [subdomain]);
+  }, [subdomain, storageKey]);
 
   // Bootstrap: resume stored session or create a new one.
   useEffect(() => {
@@ -57,7 +59,7 @@ export function useOnboarding(subdomain?: string) {
       try {
         let resumed = false;
         try {
-          const stored = localStorage.getItem(STORAGE_KEY);
+          const stored = localStorage.getItem(storageKey);
           if (stored) resumed = await loadSession(stored);
         } catch {
           /* ignore */
@@ -69,7 +71,7 @@ export function useOnboarding(subdomain?: string) {
         setStatus('error');
       }
     })();
-  }, [createSession, loadSession]);
+  }, [createSession, loadSession, storageKey]);
 
   const uploadFile = useCallback(
     async (file: File): Promise<ChatAttachment> => {
@@ -156,7 +158,7 @@ export function useOnboarding(subdomain?: string) {
 
   const reset = useCallback(async () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(storageKey);
     } catch {
       /* ignore */
     }
@@ -165,7 +167,7 @@ export function useOnboarding(subdomain?: string) {
     setStatus('loading');
     await createSession();
     setStatus('ready');
-  }, [createSession]);
+  }, [createSession, storageKey]);
 
   return {
     session,

@@ -1,5 +1,4 @@
 import { redis } from '@/lib/redis';
-import { sanitizeSubdomain } from '@/lib/subdomains';
 import type { CampaignType, PaymentMethod } from '@/lib/campaigns';
 
 /**
@@ -70,17 +69,18 @@ export type Order = {
   updatedAt: number;
 };
 
-function ordersKey(subdomain: string) {
-  return `orders:${sanitizeSubdomain(subdomain)}`;
+function ordersKey(orgId: string) {
+  return `org:${orgId}:orders`;
 }
 
-export async function getOrders(subdomain: string): Promise<Order[]> {
-  const data = await redis.get<Order[]>(ordersKey(subdomain));
+export async function getOrders(orgId: string): Promise<Order[]> {
+  const data = await redis.get<Order[]>(ordersKey(orgId));
   // Newest first.
   return (data || []).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export type NewOrderInput = {
+  orgId: string;
   subdomain: string;
   campaignSlug: string;
   campaignType: CampaignType;
@@ -91,7 +91,6 @@ export type NewOrderInput = {
 };
 
 export async function addOrder(input: NewOrderInput): Promise<Order> {
-  const sub = sanitizeSubdomain(input.subdomain);
   const now = Date.now();
   const total = input.items.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -100,7 +99,7 @@ export async function addOrder(input: NewOrderInput): Promise<Order> {
 
   const order: Order = {
     id: crypto.randomUUID(),
-    subdomain: sub,
+    subdomain: input.subdomain,
     campaignSlug: input.campaignSlug,
     campaignType: input.campaignType,
     items: input.items,
@@ -113,21 +112,20 @@ export async function addOrder(input: NewOrderInput): Promise<Order> {
     updatedAt: now
   };
 
-  const orders = (await redis.get<Order[]>(ordersKey(sub))) || [];
+  const orders = (await redis.get<Order[]>(ordersKey(input.orgId))) || [];
   orders.push(order);
-  await redis.set(ordersKey(sub), orders);
+  await redis.set(ordersKey(input.orgId), orders);
   return order;
 }
 
 export async function updateOrderStatus(
-  subdomain: string,
+  orgId: string,
   orderId: string,
   status: OrderStatus
 ): Promise<void> {
-  const sub = sanitizeSubdomain(subdomain);
-  const orders = (await redis.get<Order[]>(ordersKey(sub))) || [];
+  const orders = (await redis.get<Order[]>(ordersKey(orgId))) || [];
   const next = orders.map((o) =>
     o.id === orderId ? { ...o, status, updatedAt: Date.now() } : o
   );
-  await redis.set(ordersKey(sub), next);
+  await redis.set(ordersKey(orgId), next);
 }

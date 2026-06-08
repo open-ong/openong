@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { addOrder, type OrderItem } from '@/lib/orders';
-import { sanitizeSubdomain } from '@/lib/subdomains';
+import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaign } from '@/lib/campaigns';
 
 /**
@@ -45,8 +45,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const sub = sanitizeSubdomain(subdomain);
-  const campaign = await getCampaign(sub, campaignSlug);
+  const org = await getOrgBySlug(subdomain);
+  if (!org || !org.slug) {
+    return NextResponse.json(
+      { error: 'La organización no existe' },
+      { status: 404 }
+    );
+  }
+
+  const campaign = await getCampaign(org.id, campaignSlug);
   if (!campaign) {
     return NextResponse.json(
       { error: 'La campaña no existe' },
@@ -69,7 +76,8 @@ export async function POST(request: Request) {
   }
 
   const order = await addOrder({
-    subdomain: sub,
+    orgId: org.id,
+    subdomain: org.slug,
     campaignSlug,
     campaignType: campaign.type,
     items,
@@ -83,7 +91,7 @@ export async function POST(request: Request) {
     comprobanteUrl
   });
 
-  revalidatePath(`/s/${sub}`);
+  revalidatePath(`/s/${org.slug}`);
 
   return NextResponse.json({ ok: true, orderId: order.id });
 }

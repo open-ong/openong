@@ -1,12 +1,11 @@
 import { redis } from '@/lib/redis';
-import { sanitizeSubdomain } from '@/lib/subdomains';
 
 /**
  * Lightweight first-party traffic analytics, MVP.
  *
  * Storage (Redis):
- *   traffic:views:{sub}            HASH   field "{slug}|{YYYY-MM-DD}" -> page views
- *   traffic:uniq:{sub}:{YYYY-MM-DD} HLL    unique visitor ids for that day (PFADD)
+ *   org:{orgId}:traffic:views            HASH   field "{slug}|{YYYY-MM-DD}" -> page views
+ *   org:{orgId}:traffic:uniq:{YYYY-MM-DD} HLL   unique visitor ids for that day (PFADD)
  *
  * Views use HINCRBY (atomic counter). Unique visitors use a HyperLogLog so we
  * never store individual visitor ids — ~12KB per day regardless of volume.
@@ -42,36 +41,42 @@ export type TrafficDay = {
 };
 
 export async function recordView(input: {
-  subdomain: string;
+  orgId: string;
   slug: string;
   visitorId?: string;
 }): Promise<void> {
-  const sub = sanitizeSubdomain(input.subdomain);
-  if (!sub || !input.slug) return;
+  if (!input.orgId || !input.slug) return;
   // Strip the field separator so a slug can't corrupt the hash field layout.
   const slug = input.slug.split(FIELD_SEP).join('');
   const today = dayKey(Date.now());
 
   const tasks: Promise<unknown>[] = [
-    redis.hincrby(`traffic:views:${sub}`, `${slug}${FIELD_SEP}${today}`, 1)
+    redis.hincrby(
+      `org:${input.orgId}:traffic:views`,
+      `${slug}${FIELD_SEP}${today}`,
+      1
+    )
   ];
   if (input.visitorId) {
-    tasks.push(redis.pfadd(`traffic:uniq:${sub}:${today}`, input.visitorId));
+    tasks.push(
+      redis.pfadd(`org:${input.orgId}:traffic:uniq:${today}`, input.visitorId)
+    );
   }
   await Promise.all(tasks);
 }
 
 export async function getTrafficSeries(
-  subdomain: string,
+  orgId: string,
   days = 14
 ): Promise<TrafficDay[]> {
-  const sub = sanitizeSubdomain(subdomain);
   const dates = lastNDays(days);
 
   const [viewsHash, uniqCounts] = await Promise.all([
-    redis.hgetall<Record<string, number | string>>(`traffic:views:${sub}`),
+    redis.hgetall<Record<string, number | string>>(
+      `org:${orgId}:traffic:views`
+    ),
     Promise.all(
-      dates.map((d) => redis.pfcount(`traffic:uniq:${sub}:${d}`))
+      dates.map((d) => redis.pfcount(`org:${orgId}:traffic:uniq:${d}`))
     )
   ]);
 

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { getSession, saveSession } from '@/lib/onboarding/store';
 import { canComplete, refreshDerivedMetadata } from '@/lib/onboarding/profile';
-import { markSubdomainOnboarded } from '@/lib/subdomains';
+import { markOrgOnboarded } from '@/lib/orgs';
 
 /**
  * POST /api/onboarding/complete
@@ -49,8 +50,10 @@ export async function POST(request: Request) {
 
   await saveSession(session);
 
-  if (session.subdomain) {
-    await markSubdomainOnboarded(session.subdomain);
+  const { orgSlug } = await auth();
+  const slug = orgSlug ?? session.subdomain;
+  if (slug) {
+    await markOrgOnboarded(slug);
   }
 
   return NextResponse.json({ session });

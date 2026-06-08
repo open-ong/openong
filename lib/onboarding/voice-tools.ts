@@ -18,7 +18,7 @@ import {
 } from './profile';
 import { normalizeConfidence } from './agent';
 import { QUESTION_BY_KEY } from './questions';
-import { markSubdomainOnboarded } from '@/lib/subdomains';
+import { markOrgOnboarded } from '@/lib/orgs';
 import type {
   DeepPartial,
   NgoOnboardingProfile,
@@ -132,7 +132,7 @@ export async function markOnboardingComplete(params: {
   await saveSession(session);
 
   if (session.subdomain) {
-    await markSubdomainOnboarded(session.subdomain);
+    await markOrgOnboarded(session.subdomain);
   }
 
   return { ok: true, data: stateSnapshot(session) };

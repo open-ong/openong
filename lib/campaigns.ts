@@ -1,5 +1,4 @@
 import { redis } from '@/lib/redis';
-import { sanitizeSubdomain } from '@/lib/subdomains';
 
 export type CampaignType = 'crowdfunding' | 'tienda';
 
@@ -39,40 +38,40 @@ export function slugify(value: string) {
     .slice(0, 60);
 }
 
-function campaignsKey(subdomain: string) {
-  return `campaigns:${sanitizeSubdomain(subdomain)}`;
+function campaignsKey(orgId: string) {
+  return `org:${orgId}:campaigns`;
 }
 
-export async function getCampaigns(subdomain: string): Promise<Campaign[]> {
-  const data = await redis.get<Campaign[]>(campaignsKey(subdomain));
+export async function getCampaigns(orgId: string): Promise<Campaign[]> {
+  const data = await redis.get<Campaign[]>(campaignsKey(orgId));
   return data || [];
 }
 
 export async function getCampaign(
-  subdomain: string,
+  orgId: string,
   slug: string
 ): Promise<Campaign | null> {
-  const campaigns = await getCampaigns(subdomain);
+  const campaigns = await getCampaigns(orgId);
   return campaigns.find((c) => c.slug === slug) || null;
 }
 
 export async function addCampaign(
-  subdomain: string,
+  orgId: string,
   campaign: Campaign
 ): Promise<void> {
-  const campaigns = await getCampaigns(subdomain);
+  const campaigns = await getCampaigns(orgId);
   campaigns.push(campaign);
-  await redis.set(campaignsKey(subdomain), campaigns);
+  await redis.set(campaignsKey(orgId), campaigns);
 }
 
 export async function updateCampaign(
-  subdomain: string,
+  orgId: string,
   slug: string,
   patch: Partial<Campaign>
 ): Promise<void> {
-  const campaigns = await getCampaigns(subdomain);
+  const campaigns = await getCampaigns(orgId);
   const next = campaigns.map((c) =>
     c.slug === slug ? { ...c, ...patch } : c
   );
-  await redis.set(campaignsKey(subdomain), next);
+  await redis.set(campaignsKey(orgId), next);
 }
