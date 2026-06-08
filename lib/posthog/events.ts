@@ -24,17 +24,21 @@ export function subdomainFromHost(): string | null {
 }
 
 if (typeof window !== 'undefined' && TOKEN && isProd && !posthog.__loaded) {
-  posthog.init(TOKEN, {
-    api_host: '/ingest',
-    ui_host: 'https://us.posthog.com',
-    autocapture: true,
-    capture_pageview: false,
-    capture_pageleave: true,
-    disable_session_recording: isPublicHost(),
-    person_profiles: 'identified_only'
-  });
-  const sub = subdomainFromHost();
-  if (sub) posthog.register({ org: sub });
+  try {
+    posthog.init(TOKEN, {
+      api_host: '/ingest',
+      ui_host: 'https://us.posthog.com',
+      autocapture: true,
+      capture_pageview: false,
+      capture_pageleave: true,
+      disable_session_recording: isPublicHost(),
+      person_profiles: 'identified_only'
+    });
+    const sub = subdomainFromHost();
+    if (sub) posthog.register({ org: sub });
+  } catch {
+    void 0;
+  }
 }
 
 function ready(): boolean {

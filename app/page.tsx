@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { PenLine, Sparkles, Rocket } from 'lucide-react';
 import { LandingEffects } from './landing-effects';
 import './landing.css';
 
@@ -34,10 +35,9 @@ export default function HomePage() {
             </span>
           </a>
           <nav className="nav-menu" aria-label="Principal">
-            <a href="#modulos">Módulos</a>
             <a href="#como">Cómo funciona</a>
             <a href="#casos">Casos de uso</a>
-            <a href="#open-source">Open source</a>
+            <a href="#open-source">Código abierto</a>
           </nav>
           <div className="nav-right">
             <span className="clock" id="clock">
@@ -76,12 +76,10 @@ export default function HomePage() {
                 Plataforma de IA para recaudación
               </span>
               <h1 className="h-display reveal" data-d="1">
-                Más fondos para tu causa, con inteligencia artificial.
+                Más fondos para tu causa, con IA.
               </h1>
               <p className="lead reveal" data-d="2">
-                Demasiadas organizaciones con una gran misión no logran
-                financiarse. OpenONG usa inteligencia artificial para crear tus
-                campañas de crowdfunding y tu tienda solidaria — listas para
+                OpenONG te ayuda a crear campañas online — listas para
                 recaudar en días, no en meses.
               </p>
               <div className="hero-cta reveal" data-d="3">
@@ -103,7 +101,7 @@ export default function HomePage() {
                   <span className="dot" /> Pagos y donaciones integrados
                 </span>
                 <span className="chip">
-                  <span className="dot" /> Open source y self-hostable
+                  <span className="dot" /> Self-hostable y de código abierto
                 </span>
               </div>
             </div>
@@ -184,119 +182,9 @@ export default function HomePage() {
                 <span className="av">IA</span>
                 <span className="tx">
                   <b>Donación recurrente</b>
-                  <span>Nuevo socio · $15/mes</span>
+                  <span>Nuevo socio · $1500/mes</span>
                 </span>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ MODULES ============ */}
-        <section className="section" id="modulos">
-          <div className="wrap">
-            <div className="section-head reveal">
-              <span className="eyebrow">Los módulos</span>
-              <h2 className="h2">Una suite completa para financiar tu causa.</h2>
-              <p className="lead muted">
-                Cada módulo es una app lista para usar. Actívalos según los
-                necesites — la IA los conecta y los mantiene trabajando por ti.
-              </p>
-            </div>
-
-            <div className="mod-grid">
-              {/* Wide: Campaigns */}
-              <article className="card mod wide reveal">
-                <div className="app-ico">
-                  <span className="gl gl-circle" />
-                </div>
-                <span className="tag">Módulo · Campañas</span>
-                <h3 className="h3">Webs de crowdfunding que convierten.</h3>
-                <p>
-                  La IA redacta tu narrativa, define metas realistas y genera una
-                  página de campaña con pasarela de pago y seguimiento en tiempo
-                  real.
-                </p>
-                <div className="mod-mock">
-                  <div className="mm-bar">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <div className="mm-body">
-                    <div className="ph" />
-                    <div className="mm-lines">
-                      <b />
-                      <b />
-                      <b />
-                    </div>
-                  </div>
-                </div>
-              </article>
-
-              {/* Wide: Store */}
-              <article className="card mod wide reveal" data-d="1">
-                <div className="app-ico">
-                  <span className="gl gl-square" />
-                </div>
-                <span className="tag">Módulo · Tienda</span>
-                <h3 className="h3">Tu tienda solidaria, online.</h3>
-                <p>
-                  Vende productos y merchandising para financiarte. Catálogo,
-                  pagos y envíos configurados automáticamente, listos para
-                  publicar.
-                </p>
-                <div className="mod-mock">
-                  <div className="mm-bar">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <div className="mm-body">
-                    <div className="ph" />
-                    <div className="mm-lines">
-                      <b />
-                      <b />
-                      <b />
-                    </div>
-                  </div>
-                </div>
-              </article>
-
-              {/* AI engine */}
-              <article className="card mod wide reveal" data-d="1">
-                <div className="app-ico">
-                  <span className="gl gl-ring" />
-                </div>
-                <span className="tag">Núcleo · IA</span>
-                <h3 className="h3">La IA que entiende tu causa.</h3>
-                <p>
-                  Aprende de tu organización y redacta, diseña y optimiza cada
-                  canal.
-                </p>
-                <ul className="feats">
-                  <li>Aprende tu misión y tono</li>
-                  <li>Crea textos, imágenes y metas</li>
-                  <li>Optimiza con cada donación</li>
-                </ul>
-              </article>
-
-              {/* Dashboard */}
-              <article className="card mod wide reveal" data-d="2">
-                <div className="app-ico">
-                  <span className="gl gl-tri" />
-                </div>
-                <span className="tag">Módulo · Panel</span>
-                <h3 className="h3">Todo tu financiamiento, en una vista.</h3>
-                <p>
-                  Donantes, socios recurrentes e ingresos por canal en tiempo
-                  real.
-                </p>
-                <ul className="feats">
-                  <li>Ingresos por canal y campaña</li>
-                  <li>Socios recurrentes y bajas</li>
-                  <li>Proyecciones y alertas</li>
-                </ul>
-              </article>
             </div>
           </div>
         </section>
@@ -310,16 +198,23 @@ export default function HomePage() {
           <div className="wrap">
             <div className="section-head center reveal">
               <span className="eyebrow">Cómo funciona</span>
-              <h2 className="h2">De tu misión a tus fondos en tres pasos.</h2>
+              <h2 className="h2">
+                De tu misión a tus fondos, <br /> en tres pasos.
+              </h2>
               <p className="lead muted">
-                Sin agencias, sin esperas. Tú cuentas tu causa; la IA hace el
+                Sin agencias, sin esperas. La IA hace el
                 trabajo pesado.
               </p>
             </div>
 
             <div className="steps">
               <article className="step reveal">
-                <span className="num" />
+                <div className="step-head">
+                  <span className="step-ico">
+                    <PenLine size={18} strokeWidth={2.2} />
+                  </span>
+                  <span className="num" />
+                </div>
                 <span className="ln">———▸</span>
                 <h3 className="h3">Cuéntale tu causa</h3>
                 <p>
@@ -327,33 +222,30 @@ export default function HomePage() {
                   contexto, tu tono y a quién quieres llegar.
                 </p>
                 <div className="vis">
-                  <div className="mm-lines" style={{ flex: 1 }}>
-                    <b
-                      style={{
-                        height: 8,
-                        borderRadius: 4,
-                        background: 'var(--surface-2)',
-                        width: '70%'
-                      }}
-                    />
-                    <b
-                      style={{
-                        height: 8,
-                        borderRadius: 4,
-                        background: 'var(--surface-2)',
-                        width: '90%'
-                      }}
-                    />
+                  <div className="vis-fill">
+                    <span className="win-chips">
+                      <span>Tu misión</span>
+                      <span>Tu causa</span>
+                    </span>
+                    <div className="vis-lines">
+                      <b style={{ width: '90%' }} />
+                      <b style={{ width: '60%' }} />
+                    </div>
                   </div>
                 </div>
               </article>
               <article className="step reveal" data-d="1">
-                <span className="num" />
+                <div className="step-head">
+                  <span className="step-ico">
+                    <Sparkles size={18} strokeWidth={2.2} />
+                  </span>
+                  <span className="num" />
+                </div>
                 <span className="ln">———▸</span>
                 <h3 className="h3">Genera tus canales</h3>
                 <p>
-                  Campañas de crowdfunding, tienda online y panel de donaciones
-                  creados automáticamente, coherentes y listos para revisar.
+                  Tu web de campaña, tienda y panel de donaciones, creados y
+                  listos para revisar.
                 </p>
                 <div className="vis">
                   <span className="win-chips">
@@ -364,11 +256,16 @@ export default function HomePage() {
                 </div>
               </article>
               <article className="step reveal" data-d="2">
-                <span className="num" />
+                <div className="step-head">
+                  <span className="step-ico">
+                    <Rocket size={18} strokeWidth={2.2} />
+                  </span>
+                  <span className="num" />
+                </div>
                 <h3 className="h3">Publica y capta</h3>
                 <p>
                   Lanza en días y recibe donaciones por todos los canales desde el
-                  primer momento. La IA optimiza con cada resultado.
+                  primer momento.
                 </p>
                 <div className="vis">
                   <div
@@ -398,131 +295,71 @@ export default function HomePage() {
           <div className="wrap">
             <div className="section-head reveal">
               <span className="eyebrow">Casos de uso</span>
-              <h2 className="h2">Hecho para cada tipo de organización.</h2>
+              <h2 className="h2">Pensado para organizaciones reales.</h2>
               <p className="lead muted">
-                Da igual tu causa: OpenONG adapta los canales, el lenguaje y las
-                metas a tu misión.
+                Da igual tu causa: OpenONG adapta los canales y las metas a tu
+                misión. Estos son algunos de los casos más comunes.
               </p>
             </div>
 
             <div className="cases">
               <article className="case reveal">
                 <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-circle" />
-                  </span>
+                  <img
+                    src="https://images.pexels.com/photos/6646987/pexels-photo-6646987.jpeg?auto=compress&cs=tinysrgb&w=900"
+                    alt="Voluntario sirviendo comida en un comedor comunitario"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="body">
-                  <h3>Protección animal</h3>
+                  <h3>Comedores y bancos de alimentos</h3>
                   <p>
-                    Campañas de urgencia para rescates y una tienda de
-                    apadrinamientos recurrentes.
+                    Donantes recurrentes que sostienen cada plato y campañas para
+                    las épocas de mayor necesidad.
                   </p>
-                  <span className="meta">Campañas + Apadrinamiento</span>
+                  <span className="meta">Donaciones recurrentes</span>
                 </div>
               </article>
               <article className="case reveal" data-d="1">
                 <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-square" />
-                  </span>
+                  <img
+                    src="https://images.pexels.com/photos/12483700/pexels-photo-12483700.jpeg?auto=compress&cs=tinysrgb&w=900"
+                    alt="Persona acariciando a un perro rescatado en un refugio"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="body">
-                  <h3>Medio ambiente</h3>
+                  <h3>Rescate y protección animal</h3>
                   <p>
-                    Crowdfunding por proyecto y socios recurrentes que financian
-                    tus proyectos a largo plazo.
+                    Campañas de urgencia para rescates y padrinos que acompañan a
+                    cada animal mes a mes.
                   </p>
-                  <span className="meta">Crowdfunding + Socios</span>
+                  <span className="meta">Campañas + Padrinos</span>
                 </div>
               </article>
               <article className="case reveal" data-d="2">
                 <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-diamond" />
-                  </span>
+                  <img
+                    src="https://images.pexels.com/photos/8543037/pexels-photo-8543037.jpeg?auto=compress&cs=tinysrgb&w=900"
+                    alt="Voluntarios plantando árboles en una jornada ambiental"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="body">
-                  <h3>Educación e infancia</h3>
+                  <h3>Reforestación y medio ambiente</h3>
                   <p>
-                    Tienda solidaria con productos hechos por la comunidad y panel
-                    de donantes transparente.
+                    Crowdfunding por proyecto para financiar plantaciones y
+                    jornadas de limpieza con metas claras.
                   </p>
-                  <span className="meta">Tienda + Panel</span>
-                </div>
-              </article>
-              <article className="case reveal">
-                <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-ring" />
-                  </span>
-                </div>
-                <div className="body">
-                  <h3>Salud y acceso</h3>
-                  <p>
-                    Campañas de tratamiento con metas claras y seguimiento del
-                    impacto en tiempo real.
-                  </p>
-                  <span className="meta">Campañas + Impacto</span>
-                </div>
-              </article>
-              <article className="case reveal" data-d="1">
-                <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-tri" />
-                  </span>
-                </div>
-                <div className="body">
-                  <h3>Acción social local</h3>
-                  <p>
-                    Campañas por barrio y alta de socios recurrentes con un panel
-                    de donantes transparente.
-                  </p>
-                  <span className="meta">Campañas + Socios</span>
-                </div>
-              </article>
-              <article className="case reveal" data-d="2">
-                <div className="thumb">
-                  <span className="badge">
-                    <span className="gl gl-circle" />
-                  </span>
-                </div>
-                <div className="body">
-                  <h3>Cooperación internacional</h3>
-                  <p>
-                    Múltiples campañas por país coordinadas desde un único panel de
-                    financiación.
-                  </p>
-                  <span className="meta">Multi-campaña + Panel</span>
+                  <span className="meta">Crowdfunding por meta</span>
                 </div>
               </article>
             </div>
-          </div>
-        </section>
 
-        {/* ============ METRICS ============ */}
-        <section className="section grid-bg" style={{ paddingTop: 0 }}>
-          <div className="wrap">
-            <div className="metrics">
-              <div className="metric reveal">
-                <div className="big">5 días</div>
-                <div className="lab">
-                  Del registro a tu primera campaña publicada.
-                </div>
-              </div>
-              <div className="metric reveal" data-d="1">
-                <div className="big">3 canales</div>
-                <div className="lab">
-                  Crowdfunding, tienda y panel de donaciones — coordinados por la
-                  IA.
-                </div>
-              </div>
-              <div className="metric reveal" data-d="2">
-                <div className="big">0 código</div>
-                <div className="lab">
-                  Sin equipo técnico ni agencias. Tú diriges, la IA ejecuta.
-                </div>
-              </div>
+            <div className="cases-more reveal">
+              <Link className="btn btn-ghost btn-lg btn-arrow" href="/casos">
+                Ver más casos
+              </Link>
             </div>
           </div>
         </section>
@@ -531,12 +368,12 @@ export default function HomePage() {
         <section className="section" id="open-source">
           <div className="wrap">
             <div className="section-head center reveal">
-              <span className="eyebrow">Open source</span>
-              <h2 className="h2">Tuyo de verdad: open source y self-hostable.</h2>
+              <span className="eyebrow">Código abierto</span>
+              <h2 className="h2">Self-hostable de verdad: desplegalo donde quieras.</h2>
               <p className="lead muted">
-                OpenONG es software libre. Auditá el código, contribuí o
-                desplegalo en tu propia infraestructura — sin ataduras a un
+                Desplegá OpenONG en tu propia infraestructura, sin ataduras a un
                 proveedor y con control total sobre los datos de tu organización.
+                Al ser de código abierto, podés auditarlo y adaptarlo a tu causa.
               </p>
               <div
                 className="row"
@@ -574,6 +411,65 @@ export default function HomePage() {
                   Guía de self-hosting
                 </a>
               </div>
+
+              <div className="os-tech reveal" data-d="1">
+                <span className="os-tech-label">Construido con</span>
+                <div className="os-tech-row">
+                  <a href="https://nextjs.org/" target="_blank" rel="noreferrer">
+                    Next.js
+                  </a>
+                  <a href="https://react.dev/" target="_blank" rel="noreferrer">
+                    React
+                  </a>
+                  <a href="https://vercel.com/" target="_blank" rel="noreferrer">
+                    Vercel
+                  </a>
+                  <a
+                    href="https://tailwindcss.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Tailwind CSS
+                  </a>
+                  <a href="https://upstash.com/" target="_blank" rel="noreferrer">
+                    Upstash Redis
+                  </a>
+                  <a href="https://clerk.com/" target="_blank" rel="noreferrer">
+                    Clerk
+                  </a>
+                  <a
+                    href="https://puckeditor.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Puck AI
+                  </a>
+                  <a href="https://posthog.com/" target="_blank" rel="noreferrer">
+                    PostHog
+                  </a>
+                  <a
+                    href="https://cloudinary.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Cloudinary
+                  </a>
+                  <a
+                    href="https://www.anthropic.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Anthropic
+                  </a>
+                  <a
+                    href="https://elevenlabs.io/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    ElevenLabs
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -583,17 +479,17 @@ export default function HomePage() {
           <div className="wrap">
             <div className="cta reveal">
               <span className="eyebrow">Empieza hoy</span>
-              <h2>¿Lista tu ONG para ser sostenible?</h2>
+              <h2>Tu primera campaña de recaudación con OpenONG.</h2>
               <p>
-                Crea tu organización en OpenONG y empieza a montar tus canales de
-                financiación con tu causa real — en minutos.
+                Crea tu organización y lanza tu primera campaña con tu causa real
+                — en minutos, sin equipo técnico.
               </p>
               <div className="row">
                 <Link className="btn btn-primary btn-lg btn-arrow" href="/create">
                   Empezar
                 </Link>
-                <a className="btn btn-ghost btn-lg" href="#modulos">
-                  Explorar los módulos
+                <a className="btn btn-ghost btn-lg" href="#casos">
+                  Ver casos de uso
                 </a>
               </div>
             </div>
@@ -611,20 +507,19 @@ export default function HomePage() {
                 </span>
               </a>
               <p>
-                La plataforma de IA, open source y self-hostable, que ayuda a tu
-                ONG a recaudar fondos y financiar su misión.
+                La plataforma de IA, self-hostable y de código abierto, que ayuda
+                a tu ONG a recaudar fondos y financiar su misión.
               </p>
             </div>
             <div className="col">
               <h4>Producto</h4>
-              <a href="#modulos">Módulos</a>
               <a href="#como">Cómo funciona</a>
               <a href="#casos">Casos de uso</a>
               <Link href="/create">Crear tu ONG</Link>
             </div>
             <div className="col">
               <h4>Proyecto</h4>
-              <a href="#open-source">Open source</a>
+              <a href="#open-source">Código abierto</a>
               <a
                 href="https://github.com/open-ong/openong"
                 target="_blank"
@@ -644,11 +539,11 @@ export default function HomePage() {
           <div className="wrap foot-bottom">
             <span>© 2026 OpenONG · Recaudación con IA para ONGs</span>
             <a
-              href="https://github.com/open-ong/openong"
+              href="https://github.com/open-ong/openong/blob/main/LICENSE"
               target="_blank"
               rel="noreferrer"
             >
-              Open source · self-hostable
+              Código abierto · Licencia FSL-1.1
             </a>
           </div>
         </footer>
