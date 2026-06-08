@@ -284,6 +284,19 @@
 .openong-landing .metric .big { font-family: var(--font-head); font-weight: 700; font-size: clamp(2.4rem, 4vw, 3.4rem); letter-spacing: -0.03em; line-height: 1; }
 .openong-landing .metric .lab { margin-top: 10px; color: var(--muted); font-size: 0.92rem; max-width: 26ch; }
 
+/* ---------- OPEN SOURCE TECH ---------- */
+.openong-landing .os-tech { margin-top: 44px; text-align: center; }
+.openong-landing .os-tech-label { display: block; color: var(--muted); font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 18px; }
+.openong-landing .os-tech-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.openong-landing .os-tech-row a {
+  display: inline-flex; align-items: center;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: var(--surface);
+  color: var(--ink-2); font-family: var(--font-head); font-weight: 600; font-size: 0.86rem;
+  transition: color .2s, border-color .2s, background .2s, transform .15s ease;
+}
+.openong-landing .os-tech-row a:hover { color: var(--accent-strong); border-color: var(--accent); background: var(--surface-2); transform: translateY(-1px); }
+
 /* ---------- CTA ---------- */
 .openong-landing .cta-wrap { padding: clamp(48px, 7vw, 96px) 0; }
 .openong-landing .cta {

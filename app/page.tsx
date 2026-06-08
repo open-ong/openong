@@ -574,6 +574,65 @@ export default function HomePage() {
                   Guía de self-hosting
                 </a>
               </div>
+
+              <div className="os-tech reveal" data-d="1">
+                <span className="os-tech-label">Construido con</span>
+                <div className="os-tech-row">
+                  <a href="https://nextjs.org/" target="_blank" rel="noreferrer">
+                    Next.js
+                  </a>
+                  <a href="https://react.dev/" target="_blank" rel="noreferrer">
+                    React
+                  </a>
+                  <a href="https://vercel.com/" target="_blank" rel="noreferrer">
+                    Vercel
+                  </a>
+                  <a
+                    href="https://tailwindcss.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Tailwind CSS
+                  </a>
+                  <a href="https://upstash.com/" target="_blank" rel="noreferrer">
+                    Upstash Redis
+                  </a>
+                  <a href="https://clerk.com/" target="_blank" rel="noreferrer">
+                    Clerk
+                  </a>
+                  <a
+                    href="https://puckeditor.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Puck AI
+                  </a>
+                  <a href="https://posthog.com/" target="_blank" rel="noreferrer">
+                    PostHog
+                  </a>
+                  <a
+                    href="https://cloudinary.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Cloudinary
+                  </a>
+                  <a
+                    href="https://www.anthropic.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Anthropic
+                  </a>
+                  <a
+                    href="https://elevenlabs.io/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    ElevenLabs
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -644,11 +703,11 @@ export default function HomePage() {
           <div className="wrap foot-bottom">
             <span>© 2026 OpenONG · Recaudación con IA para ONGs</span>
             <a
-              href="https://github.com/open-ong/openong"
+              href="https://github.com/open-ong/openong/blob/main/LICENSE"
               target="_blank"
               rel="noreferrer"
             >
-              Open source · self-hostable
+              Open source · Licencia FSL-1.1
             </a>
           </div>
         </footer>

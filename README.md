@@ -117,6 +117,8 @@ Eventos y métricas de producto. El token público se usa en el cliente; las cla
 | `POSTHOG_PERSONAL_API_KEY` | Opcional | Personal API key (consultas de servidor). |
 | `POSTHOG_API_HOST` | Opcional | Host de la API (ej. `https://us.posthog.com`). |
 
+> **Personal API key:** al crearla en PostHog, configurá el acceso con scope **Projects** (seleccionando tu proyecto) en lugar de "All access", y otorgá el scope **Query → Read**. Así la key queda limitada a leer métricas del proyecto de OpenONG.
+
 ### IA — [Anthropic](https://console.anthropic.com/) / [OpenAI](https://platform.openai.com/)
 
 Generación de contenido y onboarding asistido.
@@ -163,3 +165,7 @@ Para dominios personalizados con multi-tenant, agregá un registro DNS wildcard 
 ## Contribuir
 
 OpenONG es open source. Las contribuciones, issues y sugerencias son bienvenidas en https://github.com/open-ong/openong.
+
+## Licencia
+
+OpenONG se distribuye bajo la [Functional Source License 1.1 (FSL-1.1-MIT)](./LICENSE). Podés usar, modificar, auto-hospedar y redistribuir el software libremente para cualquier propósito permitido —incluido el uso interno de tu organización—; lo único que la licencia no permite es ofrecerlo como un producto o servicio que compita con OpenONG. Dos años después de cada versión publicada, esa versión pasa automáticamente a la licencia MIT.
