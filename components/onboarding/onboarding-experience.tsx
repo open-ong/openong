@@ -47,7 +47,7 @@ export function OnboardingExperience({
     finishedRef.current = true;
     let ok = false;
     try {
-      ok = await complete(false);
+      ok = (await complete(false)) ?? false;
     } finally {
       if (!ok) finishedRef.current = false;
     }
