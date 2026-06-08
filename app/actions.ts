@@ -55,7 +55,7 @@ export async function createSubdomainAction(
     createdAt: Date.now()
   });
 
-  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}/admin`);
+  redirect(`${protocol}://${sanitizedSubdomain}.${rootDomain}/onboarding`);
 }
 
 export async function deleteSubdomainAction(

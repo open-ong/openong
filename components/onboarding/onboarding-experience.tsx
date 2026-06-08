@@ -139,9 +139,16 @@ export function OnboardingExperience({
                 </p>
               </>
             ) : (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200">
-                <Check className="mx-auto mb-1 size-5" />
-                Perfil listo. Ya podés generar tu kit de recaudación.
+              <div className="flex flex-col gap-2">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-200">
+                  <Check className="mx-auto mb-1 size-5" />
+                  Perfil listo. Ya podés generar tu kit de recaudación.
+                </div>
+                {subdomain && (
+                  <Button asChild className="w-full">
+                    <a href="/admin">Ir al panel de tu ONG</a>
+                  </Button>
+                )}
               </div>
             )}
             <Button

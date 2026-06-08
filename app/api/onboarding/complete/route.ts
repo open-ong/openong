@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession, saveSession } from '@/lib/onboarding/store';
 import { canComplete, refreshDerivedMetadata } from '@/lib/onboarding/profile';
+import { markSubdomainOnboarded } from '@/lib/subdomains';
 
 /**
  * POST /api/onboarding/complete
@@ -47,6 +48,10 @@ export async function POST(request: Request) {
   session.currentQuestionKey = null;
 
   await saveSession(session);
+
+  if (session.subdomain) {
+    await markSubdomainOnboarded(session.subdomain);
+  }
 
   return NextResponse.json({ session });
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getSubdomainData } from '@/lib/subdomains';
 import { getCampaigns } from '@/lib/campaigns';
 import { getOrders } from '@/lib/orders';
@@ -45,6 +45,10 @@ export default async function OngAdminPage({
 
   if (!data) {
     notFound();
+  }
+
+  if (!data.onboardingCompletedAt) {
+    redirect('/onboarding');
   }
 
   const [campaigns, orders, traffic] = await Promise.all([

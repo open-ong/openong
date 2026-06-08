@@ -7,12 +7,23 @@ export function sanitizeSubdomain(subdomain: string) {
 export type OngData = {
   name: string;
   createdAt: number;
+  onboardingCompletedAt?: number;
 };
 
 export async function getSubdomainData(subdomain: string) {
   const sanitized = sanitizeSubdomain(subdomain);
   const data = await redis.get<OngData>(`subdomain:${sanitized}`);
   return data;
+}
+
+export async function markSubdomainOnboarded(subdomain: string) {
+  const sanitized = sanitizeSubdomain(subdomain);
+  const data = await redis.get<OngData>(`subdomain:${sanitized}`);
+  if (!data) return;
+  await redis.set(`subdomain:${sanitized}`, {
+    ...data,
+    onboardingCompletedAt: Date.now()
+  });
 }
 
 export async function getAllSubdomains() {
