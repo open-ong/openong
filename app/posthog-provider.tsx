@@ -9,6 +9,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { userId, orgSlug } = useAuth();
   const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
 
   // Admin pageviews (public pages capture their own with tenant context).
   useEffect(() => {
@@ -19,10 +20,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isPublicHost() || !userId) return;
     identifyAdmin(userId, {
-      email: user?.primaryEmailAddress?.emailAddress,
+      email,
       org: orgSlug ?? undefined
     });
-  }, [userId, orgSlug, user]);
+  }, [userId, orgSlug, email]);
 
   return <>{children}</>;
 }
