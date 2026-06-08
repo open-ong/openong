@@ -74,7 +74,7 @@ export default async function OngAdminPage() {
             </a>
             {access.canCreateCampaign && (
               <Button asChild variant="outline">
-                <Link href="/admin/miembros">
+                <Link href="/admin/miembros#/organization-members">
                   <Users className="mr-2 h-4 w-4" />
                   Miembros
                 </Link>
