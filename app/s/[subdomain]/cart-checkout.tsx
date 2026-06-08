@@ -10,6 +10,7 @@ import {
   Upload
 } from 'lucide-react';
 import { useCart, formatPrice } from '@/lib/cart/cart-context';
+import { PH, capture } from '@/lib/posthog/events';
 import type { CampaignPayment } from '@/lib/campaigns';
 
 type View = 'cart' | 'checkout' | 'done';
@@ -85,6 +86,12 @@ export function CartCheckout({
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'No se pudo crear el pedido');
+      capture(PH.purchase, {
+        campaign: slug,
+        value: cart.total,
+        items: cart.count,
+        payment_method: payment?.method ?? 'cbu'
+      });
       cart.clear();
       setView('done');
     } catch (err) {

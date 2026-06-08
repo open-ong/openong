@@ -55,6 +55,22 @@ ONBOARDING_AGENT_SERVICE_TOKEN=
 
 # Toggle the "Hablar con el agente" voice block in the UI.
 NEXT_PUBLIC_ONBOARDING_VOICE_ENABLED=false
+
+# ─────────────────────────────────────────────────────────────
+# PostHog analytics (OPTIONAL)
+# ─────────────────────────────────────────────────────────────
+# Public project token + ingest host (browser). If unset, all tracking is a
+# no-op. Session replay runs only on the admin (root-domain) side; public
+# campaign/ONG landings capture events but never record sessions.
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+# Server-side query API (HogQL) — feeds the admin traffic panel.
+# Personal API key needs the "query:read" scope. Without these the panel shows
+# zeros instead of failing.
+POSTHOG_API_HOST=https://us.posthog.com
+POSTHOG_PROJECT_ID=
+POSTHOG_PERSONAL_API_KEY=
 ```
 
 ## Behavior matrix

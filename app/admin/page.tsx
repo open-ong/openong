@@ -6,7 +6,7 @@ import { requireActiveOrg } from '@/lib/org-context';
 import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaigns } from '@/lib/campaigns';
 import { getOrders } from '@/lib/orders';
-import { getTrafficSeries } from '@/lib/traffic';
+import { getTrafficStats } from '@/lib/posthog/traffic';
 import { protocol, rootDomain } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,10 +42,10 @@ export default async function OngAdminPage() {
     redirect('/onboarding');
   }
 
-  const [campaigns, orders, traffic] = await Promise.all([
+  const [campaigns, orders, initialStats] = await Promise.all([
     getCampaigns(access.orgId),
     getOrders(access.orgId),
-    getTrafficSeries(access.orgId)
+    getTrafficStats(access.slug, { days: 14 })
   ]);
 
   const pendingOrders = orders.filter((o) => o.status === 'por_validar').length;
@@ -100,7 +100,7 @@ export default async function OngAdminPage() {
         <TrafficDashboard
           subdomain={access.slug}
           campaigns={campaigns.map((c) => ({ slug: c.slug, title: c.title }))}
-          traffic={traffic}
+          initialStats={initialStats}
           orders={orders.map((o) => ({
             id: o.id,
             createdAt: o.createdAt,

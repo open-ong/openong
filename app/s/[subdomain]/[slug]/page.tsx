@@ -6,7 +6,7 @@ import { getOrgBySlug } from '@/lib/orgs';
 import { getCampaign } from '@/lib/campaigns';
 import { getPageData } from '@/lib/pages';
 import { PageRender } from '../render';
-import { TrackView } from './track-view';
+import { TrackLanding } from '../track-landing';
 
 export async function generateMetadata({
   params
@@ -43,7 +43,7 @@ export default async function CampaignPublicPage({
 
   return (
     <>
-      <TrackView subdomain={subdomain} slug={slug} />
+      <TrackLanding org={subdomain} campaign={slug} />
       <PageRender
         data={data}
         subdomain={subdomain}

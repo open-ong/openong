@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { PostHogProvider } from './posthog-provider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -23,7 +24,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} antialiased`}>
-          {children}
+          <PostHogProvider>{children}</PostHogProvider>
           <SpeedInsights />
         </body>
       </html>
